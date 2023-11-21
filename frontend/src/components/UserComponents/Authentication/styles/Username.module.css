@@ -1,0 +1,51 @@
+.glass{
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px #4747470b;
+    backdrop-filter: blur(7.1px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    @apply border-4 border-gray-50 shrink h-3/4 w-[30%] rounded-3xl py-20 px-7 min-w-max;
+}
+.profile_img{
+    @apply border-4 border-gray-100 w-[135px] rounded-full shadow-lg cursor-pointer;
+    @apply hover:border-gray-200;
+}
+
+.textbox{
+    @apply border-0 px-5 py-2 rounded-xl w-3/4 shadow-sm text-base;
+    @apply focus:outline-none;
+}
+.btn {
+    @apply border bg-indigo-500 w-3/4 py-2 rounded-lg text-gray-50  text-xl shadow-sm text-center;
+  }
+  
+
+.btn:hover{
+    background-color: #ff6a6a;
+}
+
+input[type='file']{
+    display: none;
+}
+
+.error {
+    color: #ff0000;
+    font-size: 0.75rem;
+    text-align: left;
+    margin-top: -0.35rem;
+    gap: 0 !important;
+ 
+  }
+
+    .inputError {
+        border-color: #fc8181; /* Set the border color to red */
+        border-width: 2px; /* Optional: Set the border width as needed */
+        border-style: solid; /* Optional: Set the border style as needed */
+        padding: 5px; /* Add padding as needed */
+        border-radius: 10px; /* Optional: Add border-radius for rounded corners */
+        width: 75%; /* Optional: Set the width as needed */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add box-shadow for a shadow effect */
+        font-size: 1.1rem; /* Optional: Set the font size as needed */
+        outline: none; 
+    }
+    

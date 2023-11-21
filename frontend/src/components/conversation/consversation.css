@@ -1,0 +1,41 @@
+/* .conversation{
+    cursor: pointer;
+    padding: 10;
+    display: flex;
+    align-items: center;
+    width: 100%;
+} */
+.conversation {
+  border-radius: 0.5rem;
+  padding: 10px;
+  cursor: pointer;
+  padding: 10;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.conversation:hover {
+  background: #80808038;
+  cursor: pointer;
+}
+
+.conversation > div {
+    position: relative;
+  }
+
+.online-dot {
+    background-color: rgb(77, 242, 17);
+    border-radius: 50%;
+    position: absolute;
+    top: -0.2rem;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  @media screen and (max-width: 768px) {
+
+      .follower.conversation>div>.name{
+       display: none;
+      }
+   }

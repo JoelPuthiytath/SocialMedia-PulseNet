@@ -1,0 +1,62 @@
+/* Default styles for larger screens */
+.messenger {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22% auto;
+  gap: 1rem;
+
+
+  }
+  
+  .chatMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-right: 2px;
+    border-right: 5px solid rgb(227, 227, 227);
+  }
+  .Chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--cardColor);
+    border-radius: 1rem;
+    padding: 1rem;
+    height: auto;
+    min-height: 80vh;
+    overflow: scroll;
+  }
+
+  .Chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .chatbox {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+  }
+  
+@media screen and (max-width: 768px) {
+  .messenger {
+     grid-template-columns: 16% auto;
+   }
+ }
+
+
+  /* Media query for mobile screens
+  @media (max-width: 999px) {
+    .messenger {
+      flex-direction: column;
+      Adjust styles for mobile layout
+    } */
+  
+    /* .chatMenu, .chatbox{ */
+      /* width: 100%; */
+      /* Adjust styles for mobile layout */
+    /* } */
+  /* } */
+  
