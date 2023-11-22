@@ -10,6 +10,7 @@ import {
   getUser,
   getPostReports,
   blockAndUnblockUser,
+  blockAndUnblockPost
 } from "../controller/adminController.js";
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router
 router.route("/edit").get(adminProtect, getUser).put(adminProtect, editUser);
 router.get("/postReports", adminProtect, getPostReports);
 router.get("/patchBlock", adminProtect, blockAndUnblockUser);
+router.get("postBlock",adminProtect,blockAndUnblockPost)
 
 export default router;

@@ -23,6 +23,7 @@ import {
   Help,
   Menu,
   Close,
+  Key,
 } from "@mui/icons-material";
 import Notifications from "react-notifications-menu";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,6 +32,9 @@ import {
   clearCredentials,
   setNotification,
   setNotificationRead,
+  setAllNotificationsRead,
+  removeNotification,
+  removeAllNotifications,
 } from "../../../slices/AuthSlice";
 import { Link, useNavigate } from "react-router-dom";
 import FlexBetween from "../../../components/FlexBetween";
@@ -71,19 +75,25 @@ const Navbar = ({ socket }) => {
     notifications,
     "this is the notification navbar===================================="
   );
-  const handleNotificationClick = (notificationId) => {
-    // Perform any other actions related to clicking the notification
-    // ...
-    console.log(
-      "inside handle notification mentoddddddddddddddddddddddddddddddddddd"
-    );
 
-    // Mark the notification as read
+  const handleNotificationClick = (notificationId) => {
+    console.log("inside the impossible place", notificationId);
     dispatch(setNotificationRead({ notificationId }));
+    setTimeout(() => {
+      dispatch(removeNotification({ notificationId }));
+    }, 1 * 60 * 1000);
+  };
+
+  const handleViewAllClick = () => {
+    console.log("mark all notifications as read");
+    dispatch(setAllNotificationsRead());
+    setTimeout(() => {
+      dispatch(removeAllNotifications());
+    }, 5 * 60 * 1000);
   };
 
   const newData = notifications.map(
-    ({ senderId, image, postId, time, read, type, notificationId }) => {
+    ({ notificationId, senderId, image, postId, time, read, type }) => {
       let action;
 
       if (type === 1) {
@@ -95,15 +105,21 @@ const Navbar = ({ socket }) => {
       }
       console.log(read);
       const messageClass = read ? "read-notification" : "unread-notification";
+
       return {
         image: image,
         message: (
-          <span className={messageClass}>
-            {`${senderId} ${action} your post.`}
-          </span>
+          <div key={notificationId}>
+            <div className="displayflex">
+              <div className="username"> {senderId}</div>
+            </div>
+            <div className={messageClass}>
+              <span key={notificationId}>{` ${action} your post.`}</span>
+              <div className="time"> {format(time)} </div>
+            </div>
+          </div>
         ),
         detailPage: `/posts/${postId}`,
-        receivedTime: format(time),
       };
     }
   );
@@ -162,16 +178,17 @@ const Navbar = ({ socket }) => {
               header={{
                 title: "Notifications",
                 option: {
-                  text: "View All",
-                  onClick: () => console.log("Clicked"),
+                  text: <p className="mark__read">Mark all as read</p>,
+                  onClick: handleViewAllClick,
                 },
               }}
-              markAsRead={(data) => {
-                console.log(data);
-
-                handleNotificationClick(data.notificationId);
+              markAsRead={(newData) => {
+                // onClick:(handleNotificationClick(newData.notificationId));
+                // oncli
+                alert(newData);
               }}
             />
+
             <IconButton
               onClick={() => {
                 navigate("/messenger");
@@ -269,12 +286,12 @@ const Navbar = ({ socket }) => {
                 header={{
                   title: "Notifications",
                   option: {
-                    text: "View All",
-                    onClick: () => console.log("Clicked"),
+                    text: <p className="mark__read">Mark all as read</p>,
+                    onClick: handleViewAllClick,
                   },
                 }}
                 markAsRead={(data) => {
-                  console.log(data);
+                  handleNotificationClick(data.notificationId);
                 }}
               />
               <Help sx={{ fontSize: "25px" }} />

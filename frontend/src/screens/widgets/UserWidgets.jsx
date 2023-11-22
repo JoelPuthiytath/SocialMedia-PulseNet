@@ -195,7 +195,7 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleLinkedinLinkClick = () => {
     // navigate(profileLink);
-    window.open(userInfo.socialProfile);
+    window.open(user.socialProfile);
   };
 
   return (
@@ -337,22 +337,6 @@ const UserWidget = ({ userId, picturePath }) => {
 
           <Divider />
 
-          {/* THIRD ROW */}
-          {/* <Box p="1rem 0">
-        <FlexBetween mb="0.5rem">
-          <Typography color={medium}>Who's viewed your profile</Typography>
-          <Typography color={main} fontWeight="500">
-            {viewedProfile}
-          </Typography>
-        </FlexBetween>
-        <FlexBetween>
-          <Typography color={medium}>Impressions of your post</Typography>
-          <Typography color={main} fontWeight="500">
-            {impressions}
-          </Typography>
-        </FlexBetween>
-      </Box> */}
-
           <Divider />
 
           {/* FOURTH ROW */}
@@ -382,14 +366,16 @@ const UserWidget = ({ userId, picturePath }) => {
               </IconButton>
             </FlexBetween>
             {isEditingLinkedin && (
-              <Box mb="1rem">
+              <Box mb="1rem" gap={2}>
                 <TextField
+                  variant="standard"
                   id="profileLink"
                   label="Linkedin Profile Link"
                   value={profileLink}
                   onChange={(event) => setProfileLink(event.target.value)}
                 />
                 <Button
+                  className="my-2 ms-2"
                   variant="contained"
                   color="primary"
                   onClick={handleSaveLinkedinLink}

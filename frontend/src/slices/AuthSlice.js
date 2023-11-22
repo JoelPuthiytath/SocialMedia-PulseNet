@@ -54,6 +54,21 @@ const AuthSlice = createSlice({
       }
     },
 
+    setAllNotificationsRead: (state) => {
+      state.notifications.forEach((notification) => {
+        notification.read = true;
+      });
+    },
+    removeNotification: (state, action) => {
+      const { notificationId } = action.payload;
+      state.notifications = state.notifications.filter(
+        (notification) => notification.id !== notificationId
+      );
+    },
+    removeAllNotifications: (state) => {
+      state.notifications = [];
+    },
+
     setPosts: (state, action) => {
       state.posts = action.payload.posts;
     },
@@ -87,5 +102,8 @@ export const {
   setNotificationRead,
   setPosts,
   setPost,
+  setAllNotificationsRead,
+  removeNotification,
+  removeAllNotifications,
 } = AuthSlice.actions;
 export default AuthSlice.reducer;

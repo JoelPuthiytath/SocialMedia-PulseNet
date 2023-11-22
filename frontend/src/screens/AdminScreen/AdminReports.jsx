@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { usePostReportsMutation } from "../../slices/AdminApiSlice";
 import Loader from "../../loader/GridLoader";
+import { format } from "timeago.js";
 
 import ReportsFilters from "../../components/reportsFilter";
 import { Link } from "react-router-dom";
@@ -84,6 +85,7 @@ const AdminReports = () => {
                       <TableCell>Reporter ID</TableCell>
                       <TableCell>Post ID</TableCell>
                       <TableCell>Report Reason</TableCell>
+                      <TableCell>Reported Time</TableCell>
                       <TableCell>Post Link</TableCell>
                     </TableRow>
                   </TableHead>
@@ -93,6 +95,8 @@ const AdminReports = () => {
                         <TableCell>{report.reporterId}</TableCell>
                         <TableCell>{report.postId}</TableCell>
                         <TableCell>{report.reportReason}</TableCell>
+                        <TableCell>{format(report.timestamp)}</TableCell>
+
                         <TableCell>
                           {
                             <Link

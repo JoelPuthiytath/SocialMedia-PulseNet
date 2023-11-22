@@ -32,9 +32,10 @@ import { useNavigate } from "react-router-dom";
 import lottie from "lottie-web";
 import typingAnimation from "../../animation/animation.json";
 import LocalPhone from "@mui/icons-material/LocalPhone";
-import videoCall from "../videoCall";
+import VideoCall from "../videoCall";
 import Peer from "peerjs";
 import { toast } from "react-toastify";
+import VideoCallModal from "../videoCallModal";
 
 const Message = ({
   chat,
@@ -64,10 +65,14 @@ const Message = ({
   const [hoveredMessage, setHoveredMessage] = useState(null);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
+  const [VideoCall, setVideoCall] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isIncomingCall, setIsIncomingCall] = useState(true);
 
   const animationContainer = useRef(null);
   const typingRef = useRef(typing);
   const scroll = useRef();
+  const navigate = useNavigate();
 
   const actions = [
     { icon: <FileCopyIcon />, name: "Copy" },
@@ -206,6 +211,8 @@ const Message = ({
     scroll.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {});
+
   // handle unsend message
 
   const handleMouseEnter = (messageId) => {
@@ -214,6 +221,12 @@ const Message = ({
 
   const handleMouseLeave = () => {
     setHoveredMessage(null);
+  };
+
+  const handleCallClick = () => {
+    console.log("inside the call icon", VideoCall);
+    setVideoCall(true);
+    console.log(VideoCall, "video call");
   };
 
   const handleActionClick = async (actionName, messageId) => {
@@ -235,6 +248,13 @@ const Message = ({
         console.log(error);
       }
     }
+  };
+
+  const handleCallEnd = () => {
+    // Handle the logic when the call ends
+    setIsModalOpen(false);
+    setVideoCall(false);
+    // Additional logic, such as disconnecting the call, setting callEnded state, etc.
   };
 
   return (
@@ -290,12 +310,7 @@ const Message = ({
                     justifyContent: "flex-end",
                   }}
                 >
-                  <IconButton
-                    className="me-2"
-                    // onClick={() => {
-                    //   navigate("/videoCall", { state: { chat } });
-                    // }}
-                  >
+                  <IconButton className="me-2" onClick={handleCallClick}>
                     <VideoCallIcon fontSize="large" color={dark} />
                   </IconButton>
                   <IconButton className="me-5">
@@ -304,6 +319,14 @@ const Message = ({
                 </Grid>
               </Grid>
             </div>
+            {VideoCall && (
+              <VideoCallModal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                isIncomingCall={isIncomingCall}
+                onCallEnd={handleCallEnd}
+              />
+            )}
 
             <div className="messages-container">
               {messages &&

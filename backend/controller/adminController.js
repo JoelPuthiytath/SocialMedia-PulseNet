@@ -212,11 +212,31 @@ const blockAndUnblockUser = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+const blockAndUnblockPost = asyncHandler(async (req, res) => {
+  const { postId } = req.query;
+  console.log(postId, "userid");
 
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    post.blocked = !post.blocked;
+
+    await post.save();
+    res.status(200).json({ success: true, post });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 export {
   adminLogin,
   logoutAdmin,
   blockAndUnblockUser,
+  blockAndUnblockPost,
   getAllUsers,
   createUser,
   deleteUsers,

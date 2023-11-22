@@ -121,7 +121,7 @@ export default function MiniDrawer() {
   };
 
   const [open, setOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState("Inbox");
+  const [selectedItem, setSelectedItem] = useState("Users");
   const handleDrawerOpen = () => {
     setOpen(true);
   };

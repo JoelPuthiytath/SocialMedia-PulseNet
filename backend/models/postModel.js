@@ -23,6 +23,9 @@ const postSchema = new mongoose.Schema(
       type: Map,
       of: Boolean,
     },
+    blocked: {
+      type: Boolean,
+    },
     comments: {
       type: Array,
       default: [],
