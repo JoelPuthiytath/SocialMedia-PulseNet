@@ -31,8 +31,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import lottie from "lottie-web";
 import typingAnimation from "../../animation/animation.json";
-import LocalPhone from "@mui/icons-material/LocalPhone";
-import VideoCall from "../videoCall";
 import Peer from "peerjs";
 import { toast } from "react-toastify";
 import VideoCallModal from "../videoCallModal";
@@ -67,11 +65,20 @@ const Message = ({
   const [istyping, setIsTyping] = useState(false);
   const [VideoCall, setVideoCall] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
-  const [isIncomingCall, setIsIncomingCall] = useState(true);
+  const [isIncomingCall, setIsIncomingCall] = useState(false);
+  const [callAccepted, setCallAccepted] = useState(false);
+  const [caller, setCaller] = useState("");
+  const [callerSignal, setCallerSignal] = useState();
+  const [me, setMe] = useState("");
+  const [stream, setStream] = useState();
+  const [callEnded, setCallEnded] = useState(false);
 
   const animationContainer = useRef(null);
   const typingRef = useRef(typing);
   const scroll = useRef();
+  const userVideo = useRef();
+  const connectionRef = useRef();
+
   const navigate = useNavigate();
 
   const actions = [
@@ -211,7 +218,48 @@ const Message = ({
     scroll.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {});
+  useEffect(() => {
+    socket.current?.on("me", (userId) => {
+      setMe(userId);
+    });
+    socket.current?.on("callUser", (data) => {
+      console.log(data, "this is the data you're looking for");
+      console.log("just checking");
+      setVideoCall(true);
+      setIsIncomingCall(true);
+      setCaller(data.from);
+      setCallerSignal(data.signal);
+    });
+  }, []);
+
+  const callUser = () => {
+    console.log("inside call user");
+
+    const peer = new Peer({
+      initiator: true,
+      stream: stream,
+    });
+
+    peer.on("signal", (data) => {
+      socket.current.emit("callUser", {
+        userToCall: receiverId,
+        signalData: data,
+        from: me,
+        name: userData.userName,
+      });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      userVideo.current.srcObject = remoteStream;
+    });
+
+    socket.current?.on("callAccepted", (signal) => {
+      setCallAccepted(true);
+      peer.signal(signal);
+    });
+
+    connectionRef.current = peer;
+  };
 
   // handle unsend message
 
@@ -224,7 +272,8 @@ const Message = ({
   };
 
   const handleCallClick = () => {
-    console.log("inside the call icon", VideoCall);
+    callUser();
+    setIsModalOpen(true);
     setVideoCall(true);
     console.log(VideoCall, "video call");
   };
@@ -252,9 +301,10 @@ const Message = ({
 
   const handleCallEnd = () => {
     // Handle the logic when the call ends
-    setIsModalOpen(false);
+    setCallEnded(true);
+    setIsModalOpen(false); // Close the modal when the call ends
     setVideoCall(false);
-    // Additional logic, such as disconnecting the call, setting callEnded state, etc.
+    connectionRef.current.destroy();
   };
 
   return (
@@ -269,7 +319,7 @@ const Message = ({
             }}
           >
             <div
-              className="conversation1"
+              className="conversation"
               style={{ borderBottom: "2px solid lightGray", padding: "5px" }}
             >
               <Grid container spacing={1} alignItems="center">
@@ -310,11 +360,8 @@ const Message = ({
                     justifyContent: "flex-end",
                   }}
                 >
-                  <IconButton className="me-2" onClick={handleCallClick}>
+                  <IconButton className="me-5" onClick={handleCallClick}>
                     <VideoCallIcon fontSize="large" color={dark} />
-                  </IconButton>
-                  <IconButton className="me-5">
-                    <LocalPhone color={dark} />
                   </IconButton>
                 </Grid>
               </Grid>
@@ -324,6 +371,10 @@ const Message = ({
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 isIncomingCall={isIncomingCall}
+                setStream={setStream}
+                callAccepted={callAccepted}
+                callEnded={callEnded}
+                userVideo={userVideo}
                 onCallEnd={handleCallEnd}
               />
             )}
@@ -383,7 +434,7 @@ const Message = ({
                             </Box>
                           )}
                           <Typography
-                            className="messageText me-3"
+                            className="messageText me-4"
                             variant="body1"
                           >
                             {message.text}

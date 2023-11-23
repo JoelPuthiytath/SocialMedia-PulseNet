@@ -76,9 +76,7 @@ io.on("connection", (socket) => {
   );
 
   // entho ezhuthan onndddddd
-  socket.on("me", (socket) => {
-    socket.emit("me", id); // emit the user's ID back to the user
-  });
+  socket.emit("me", socket.id);
 
   socket.on("callUser", (data) => {
     console.log(data.userToCall, "userToCall id is here");

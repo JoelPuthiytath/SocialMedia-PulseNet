@@ -6,6 +6,7 @@ import {
   ImageOutlined,
   MicOutlined,
   MoreHorizOutlined,
+  LocationOn,
 } from "@mui/icons-material";
 import {
   Box,
@@ -17,15 +18,19 @@ import {
   IconButton,
   useMediaQuery,
 } from "@mui/material";
-
+import axios from "axios";
 import FlexBetween from "../../components/FlexBetween";
 import Dropzone from "react-dropzone";
 import UserImage from "../../components/UserImage";
 import WidgetWrapper from "../../components/WidgetWrapper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "../../slices/AuthSlice";
-import { useCreatePostMutation } from "../../slices/PostApiSlice";
+import {
+  useCreatePostMutation,
+  useGetFeedPostMutation,
+} from "../../slices/PostApiSlice";
+import { LoaderIcon } from "react-hot-toast";
 
 const MyPostWidget = ({ profilePic }) => {
   const dispatch = useDispatch();
@@ -39,20 +44,69 @@ const MyPostWidget = ({ profilePic }) => {
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
   const [createPost] = useCreatePostMutation();
+  const [getFeedPost] = useGetFeedPostMutation();
+
+  const [location, setLocation] = useState(null);
+
+  // const getUserLocation = () => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setLocation({ latitude, longitude });
+  //       },
+  //       (error) => {
+  //         console.error(error.message);
+  //       }
+  //     );
+  //   } else {
+  //     console.error("Geolocation is not supported by this browser.");
+  //   }
+  // };
+  const getUserLocation = async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // Use OpenCage API to get the city name
+          try {
+            const apiKey = "0c2826277067414da374106f755f2092"; // Replace with your actual API key
+            const response = await axios.get(
+              `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}`
+            );
+
+            const { country, county, state } =
+              response.data.results[0].components;
+
+            console.log(country, "this is the city you are looking for");
+            setLocation(`${state}, ${county}`);
+          } catch (error) {
+            console.error("Error fetching city:", error.message);
+          }
+        },
+        (error) => {
+          console.error(error.message);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
 
   const handlePost = async () => {
     const formData = new FormData();
-    formData.append("userId", _id);
     formData.append("description", post);
+    if (location) {
+      formData.append("location", location);
+    }
     if (image) {
-      // formData.append("picture", image);
       formData.append("picturePath", image);
     }
-    // console.log(formData, "<==form data form mypostwidget");
 
-    const posts = await createPost(formData).unwrap();
-    // console.log(posts, "<== postData form MypostWidget");
-    dispatch(setPosts({ posts }));
+    await createPost(formData).unwrap();
+    const data = await getFeedPost().unwrap();
+    dispatch(setPosts({ posts: data }));
     setImage(null);
     setPost("");
   };
@@ -71,6 +125,16 @@ const MyPostWidget = ({ profilePic }) => {
             borderRadius: "2rem",
             padding: "1rem 2rem",
           }}
+          endAdornment={
+            <IconButton
+              disabled={!post}
+              onClick={() => {
+                getUserLocation();
+              }}
+            >
+              <LocationOn />
+            </IconButton>
+          }
         />
       </FlexBetween>
       {isImage && (

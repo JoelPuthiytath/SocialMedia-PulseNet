@@ -183,8 +183,7 @@ const Navbar = ({ socket }) => {
                 },
               }}
               markAsRead={(newData) => {
-                // onClick:(handleNotificationClick(newData.notificationId));
-                // oncli
+
                 alert(newData);
               }}
             />

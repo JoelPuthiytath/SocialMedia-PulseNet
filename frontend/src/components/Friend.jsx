@@ -15,7 +15,10 @@ import PostMenu from "./PostMenu";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useDeletePostMutation } from "../slices/PostApiSlice";
+import {
+  useDeletePostMutation,
+  useGetFeedPostMutation,
+} from "../slices/PostApiSlice";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 const ITEM_HEIGHT = 38;
@@ -40,6 +43,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [deletePost] = useDeletePostMutation();
+  const [getFeedPost] = useGetFeedPostMutation();
 
   const [addFriend] = useAddFriendMutation();
   // console.log(`userId : ${userId} frinedId : ${friendId}`);
@@ -70,7 +74,8 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   };
 
   const postDelete = async () => {
-    const data = await deletePost({ postId }).unwrap();
+    await deletePost({ postId }).unwrap();
+    const data = await getFeedPost().unwrap();
     dispatch(setPosts({ posts: data }));
     console.log("postDelete");
     handleClose(); // Close the menu after deleting the post

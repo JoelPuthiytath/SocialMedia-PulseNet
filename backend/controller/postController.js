@@ -28,23 +28,63 @@ const uploadPost = (req, res) => {
     }
 
     try {
-      const { userId, description } = req.body;
-      const user = await User.findById(userId);
+      const { location, description } = req.body;
+      console.log(req.body?.location, "this is the location");
+      const userId = req.user._id;
+      console.log(userId, "this is the userId");
       const newPost = new Post({
-        userId,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        location: user.address,
+        userId: userId,
+        location: location,
         description,
-        userProfilePic: user.profilePic,
         picturePath: req?.file?.filename || "",
         likes: {},
         comments: [],
       });
       await newPost.save();
 
-      const post = await Post.find().sort({ createdAt: -1 });
-      res.status(201).json(post);
+      // const user = await User.findById(userId).populate("blockedUsers");
+      // const allBlockedUserIds = user.blockedUsers.map(
+      //   (blockedUser) => blockedUser._id
+      // );
+
+      // const posts = await Post.aggregate([
+      //   {
+      //     $match: {
+      //       userId: { $nin: allBlockedUserIds },
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "users", // Assuming your User collection name is "users"
+      //       localField: "userId",
+      //       foreignField: "_id",
+      //       as: "userDetails",
+      //     },
+      //   },
+      //   {
+      //     $unwind: "$userDetails",
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 1,
+      //       userId: 1,
+      //       location: 1,
+      //       description: 1,
+      //       picturePath: 1,
+      //       likes: 1,
+      //       comments: 1,
+      //       createdAt: 1,
+      //       updatedAt: 1,
+      //       "userDetails.firstName": 1,
+      //       "userDetails.lastName": 1,
+      //       "userDetails.profilePic": 1,
+      //     },
+      //   },
+      //   {
+      //     $sort: { createdAt: -1 },
+      //   },
+      // ]);
+      res.status(201).json({ sucess: true });
     } catch (err) {
       res.status(409).json({ message: err.message });
     }
@@ -60,9 +100,45 @@ const getFeedPosts = asyncHandler(async (req, res) => {
       ...user.blockedUsers.map((blockedUser) => blockedUser._id),
       ...blockedUserIds,
     ];
-    const posts = await Post.find({
-      userId: { $nin: allBlockedUserIds },
-    }).sort({ createdAt: -1 });
+    const posts = await Post.aggregate([
+      {
+        $match: {
+          userId: { $nin: allBlockedUserIds },
+        },
+      },
+      {
+        $lookup: {
+          from: "users", // Assuming your User collection name is "users"
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          location: 1,
+          description: 1,
+          picturePath: 1,
+          likes: 1,
+          comments: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.firstName": 1,
+          "userDetails.lastName": 1,
+          "userDetails.profilePic": 1,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ]);
+
+    console.log(posts, "feed posts");
 
     res.status(200).json(posts);
   } catch (error) {
@@ -79,7 +155,41 @@ const getUserPosts = asyncHandler(async (req, res) => {
     if (isBlocked && isBlocked.blocked) {
       return res.status(200).json([]);
     }
-    const userPosts = await Post.find({ userId }).sort({ createdAt: -1 });
+    const userPosts = await Post.aggregate([
+      {
+        $match: { userId: mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          location: 1,
+          description: 1,
+          picturePath: 1,
+          likes: 1,
+          comments: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.firstName": 1,
+          "userDetails.lastName": 1,
+          "userDetails.userProfilePic": 1,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ]);
 
     res.status(200).json(userPosts);
   } catch (err) {
@@ -162,10 +272,7 @@ const deletePost = asyncHandler(async (req, res) => {
     const result = await Post.deleteOne({ _id: postId });
 
     if (result.deletedCount === 1) {
-      // Find the remaining posts after deleting
-      const remainingPosts = await Post.find().sort({ createdAt: -1 });
-
-      res.status(200).json(remainingPosts);
+      res.status(200).json({ success: true });
     } else {
       res.status(500).json({ error: "Failed to delete the post" });
     }

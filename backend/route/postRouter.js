@@ -14,7 +14,7 @@ import {
 
 const router = express.Router();
 
-router.post("/createPost", uploadPost);
+router.post("/createPost", protect, uploadPost);
 router.get("/", protect, getFeedPosts);
 router.get("/posts/:postId", protect, postById);
 router.get("/getPosts", protect, getUserPosts);

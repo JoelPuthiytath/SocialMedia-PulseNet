@@ -1,8 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { styled } from "@mui/system";
-import VideoCallIcon from "@mui/icons-material/VideoCall";
 import CallEndIcon from "@mui/icons-material/CallEnd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
@@ -21,9 +20,16 @@ const ModalContent = styled("div")(({ theme }) => ({
   textAlign: "center",
 }));
 
-const VideoCallModal = ({ open, onClose, isIncomingCall, onCallEnd }) => {
-  const [stream, setStream] = useState();
-  
+const VideoCallModal = ({
+  open,
+  onClose,
+  setStream,
+  callAccepted,
+  isIncomingCall,
+  callEnded,
+  userVideo,
+  onCallEnd,
+}) => {
   const myVideo = useRef();
 
   useEffect(() => {
@@ -31,24 +37,9 @@ const VideoCallModal = ({ open, onClose, isIncomingCall, onCallEnd }) => {
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setStream(stream);
-        console.log(stream, "stream");
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
-      })
-      .catch((error) => {
-        console.error("Error accessing media devices:", error);
+        myVideo.current.srcObject = stream;
       });
-
-    socket.current.on("callUser", (data) => {
-      console.log(data, "this is the data you're looking for");
-      console.log("just checking");
-      setReceivingCall(true);
-      setCaller(data.from);
-      setCallerSignal(data.signal);
-    });
   }, []);
-
   return (
     <StyledModal
       open={open}
@@ -59,8 +50,16 @@ const VideoCallModal = ({ open, onClose, isIncomingCall, onCallEnd }) => {
       <ModalContent>
         {isIncomingCall ? (
           <>
-            <VideoCallIcon fontSize="large" color="primary" />
             <h2 id="video-call-modal">Incoming Video Call</h2>
+            <div className="video">
+              <video
+                playsInline
+                muted
+                ref={myVideo}
+                autoPlay
+                style={{ width: "300px" }}
+              />
+            </div>
             <p id="video-call-description">John Doe is calling...</p>
             <div>
               <button onClick={onCallEnd}>
@@ -70,9 +69,37 @@ const VideoCallModal = ({ open, onClose, isIncomingCall, onCallEnd }) => {
           </>
         ) : (
           <>
-            <VideoCallIcon fontSize="large" color="primary" />
             <h2 id="video-call-modal">Ongoing Video Call</h2>
-            <p id="video-call-description">You are in a call with John Doe.</p>
+            <div className="video">
+              {callAccepted && !callEnded ? (
+                <>
+                  <video
+                    className="my-3"
+                    playsInline
+                    ref={userVideo}
+                    autoPlay
+                    style={{ width: "300px" }}
+                  />
+                  <span className="mt-3" id="video-call-description">
+                    You are in a call with jinto.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <video
+                    className="my-3"
+                    playsInline
+                    ref={myVideo}
+                    autoPlay
+                    style={{ width: "300px" }}
+                  />
+                  <span className="mt-3" id="video-call-description">
+                    Calling
+                  </span>
+                </>
+              )}
+            </div>
+
             <div>
               <button onClick={onCallEnd}>
                 <CallEndIcon fontSize="large" color="error" />
