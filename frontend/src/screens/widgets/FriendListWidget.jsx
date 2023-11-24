@@ -1,5 +1,7 @@
 import {
   Box,
+  Button,
+  ButtonGroup,
   Divider,
   IconButton,
   InputBase,
@@ -17,30 +19,49 @@ import {
 } from "../../slices/UsersApiSlice";
 import FlexBetween from "../../components/FlexBetween";
 import { Search } from "@mui/icons-material";
+// import { Button, ButtonGroup } from "react-bootstrap";
+// import ButtonGroup from "@mui/material/ButtonGroup";
+// import Button from "@mui/material/Button";
 
 const FriendListWidget = ({ userId }) => {
   // console.log(userId, "<friendlist UserId");
   const dispatch = useDispatch();
   const { palette } = useTheme();
-  const { friends } = useSelector((state) => state.authUser.userInfo);
+  const { followers, following } = useSelector(
+    (state) => state.authUser.userInfo
+  );
   // console.log(friends, "<==checking friendListWidget");
   const [getFriends] = useGetFriendsMutation();
   const neutralLight = palette.neutral.light;
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [clickFollowers, setClickFollowers] = useState(true);
+  const [clickFollowing, setClickFollowings] = useState(false);
   const [searchUser] = useSearchUserMutation();
 
   useEffect(() => {
     (async () => {
       const data = await getFriends({ userId }).unwrap();
-      dispatch(setFriends({ friends: data }));
+      console.log(data, "this is the data i am looking for");
+      dispatch(
+        setFriends({ followers: data.followers, following: data.following })
+      );
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const performSearch = async () => {
     const res = await searchUser({ searchTerm }).unwrap();
     console.log(res, "< this is what ia m cheking");
     setSearchResults(res);
+  };
+
+  const handleClickFollower = () => {
+    setClickFollowers(!clickFollowers);
+    setClickFollowings(false);
+  };
+
+  const handleClickFollowing = () => {
+    setClickFollowings(!clickFollowing);
+    setClickFollowers(false);
   };
 
   return (
@@ -60,6 +81,17 @@ const FriendListWidget = ({ userId }) => {
         <IconButton onClick={performSearch}>
           <Search />
         </IconButton>
+      </FlexBetween>
+      <FlexBetween marginTop={3}>
+        <ButtonGroup
+          disableElevation
+          variant="contained"
+          aria-label="Disabled elevation buttons"
+          color="inherit"
+        >
+          <Button onClick={handleClickFollower}>Followers</Button>
+          <Button onClick={handleClickFollowing}>Following</Button>
+        </ButtonGroup>
       </FlexBetween>
       {searchResults.length > 0 && (
         <>
@@ -88,7 +120,7 @@ const FriendListWidget = ({ userId }) => {
         </>
       )}
 
-      {friends.length > 0 && (
+      {clickFollowers && followers?.length > 0 && (
         <WidgetWrapper marginTop={"2rem"}>
           <Typography
             color={palette.neutral.dark}
@@ -96,10 +128,35 @@ const FriendListWidget = ({ userId }) => {
             fontWeight="500"
             sx={{ mb: "1.5rem" }}
           >
-            Friend List
+            Followers{" "}
+            <span className="float-right text-primary">{followers.length}</span>
           </Typography>
           <Box display="flex" flexDirection="column" gap="1.5rem">
-            {friends.map((friend) => (
+            {followers.map((friend) => (
+              <Friend
+                key={friend._id}
+                friendId={friend._id}
+                name={`${friend.firstName} ${friend.lastName}`}
+                subtitle={friend.userName}
+                userProfilePic={friend.profilePic}
+              />
+            ))}
+          </Box>
+        </WidgetWrapper>
+      )}
+      {clickFollowing && following?.length > 0 && (
+        <WidgetWrapper marginTop={"2rem"}>
+          <Typography
+            color={palette.neutral.dark}
+            variant="h5"
+            fontWeight="500"
+            sx={{ mb: "1.5rem" }}
+          >
+            Following{" "}
+            <span className="float-right text-primary">{following.length}</span>
+          </Typography>
+          <Box display="flex" flexDirection="column" gap="1.5rem">
+            {following.map((friend) => (
               <Friend
                 key={friend._id}
                 friendId={friend._id}

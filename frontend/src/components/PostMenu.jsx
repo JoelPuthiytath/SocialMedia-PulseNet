@@ -45,7 +45,9 @@ export default function LongMenu({ postId, friendId }) {
 
   const unFriendUser = async () => {
     const data = await removeFriend({ friendId }).unwrap();
-    dispatch(setFriends({ friends: data }));
+    dispatch(
+      setFriends({ following: data.following, followers: data.followers })
+    );
     console.log("removeFriend");
     handleClose();
   };

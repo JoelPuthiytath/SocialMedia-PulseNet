@@ -59,7 +59,7 @@ const PostWidget = ({
 
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.authUser);
-  console.log(userInfo.friends, "friends of user");
+
   console.log(socket, "socket in postWidget");
   // console.log(userInfo, "<postwidget");
   const [likeAndUnlikePost] = useLikeAndUnlikePostMutation();
@@ -272,7 +272,7 @@ const PostWidget = ({
           <Typography variant="h3" className="my-3">
             Share
           </Typography>
-          {userInfo.friends.map((friend) => (
+          {userInfo.following.map((friend) => (
             <div
               key={friend._id}
               style={{

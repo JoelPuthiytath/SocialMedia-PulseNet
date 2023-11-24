@@ -26,6 +26,7 @@ import {
   blockUser,
   unblockUser,
   addSocialProfile,
+  fetchBlockedUsers,
 } from "../controller/userController.js";
 const router = express.Router();
 
@@ -59,5 +60,6 @@ router.post("/reportUser", protect, reportUser);
 router.put("/blockUser", protect, blockUser);
 router.put("/unblockUser", protect, unblockUser);
 router.put("/socialProfile", protect, addSocialProfile);
+router.get("/fetchBlockedusers",protect,fetchBlockedUsers)
 
 export default router;

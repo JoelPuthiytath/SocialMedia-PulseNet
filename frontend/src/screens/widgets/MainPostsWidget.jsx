@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "../../slices/AuthSlice";
 import PostWidget from "./postWidget";
@@ -16,18 +16,28 @@ const PostsWidget = ({ userId, isProfile, socket }) => {
   console.log(userId, "this is the userid");
 
   const getPosts = async () => {
-    const data = await getFeedPost().unwrap();
+    console.log("feed posts");
+    try {
+      const data = await getFeedPost().unwrap();
 
-    dispatch(setPosts({ posts: data }));
+      dispatch(setPosts({ posts: data }));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const userPosts = async () => {
-    const data = await getUserPost({ userId }).unwrap();
-    dispatch(setPosts({ posts: data }));
+    console.log(userId, "userId");
+    try {
+      const data = await getUserPost({ userId }).unwrap();
+      console.log(data, "data");
+      dispatch(setPosts({ posts: data }));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    // console.log("useEffect check in Mina");
     if (isProfile) {
       console.log("userPosts");
       userPosts();
@@ -35,7 +45,7 @@ const PostsWidget = ({ userId, isProfile, socket }) => {
       console.log("feeed postss");
       getPosts();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>

@@ -6,6 +6,7 @@ import User from "../models/userModel.js";
 import Post from "../models/postModel.js";
 import PostReport from "../models/postReports.js";
 import { validationResult } from "express-validator";
+import mongoose from "mongoose";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -138,8 +139,6 @@ const getFeedPosts = asyncHandler(async (req, res) => {
       },
     ]);
 
-    console.log(posts, "feed posts");
-
     res.status(200).json(posts);
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -149,16 +148,17 @@ const getFeedPosts = asyncHandler(async (req, res) => {
 
 const getUserPosts = asyncHandler(async (req, res) => {
   try {
-    const { userId } = req.query;
+    const id = req.query.userId;
+    const userId = new mongoose.Types.ObjectId(id);
+    console.log(userId, "userId");
     const isBlocked = await User.findById(userId).select("blocked");
+    console.log(isBlocked);
 
     if (isBlocked && isBlocked.blocked) {
       return res.status(200).json([]);
     }
+
     const userPosts = await Post.aggregate([
-      {
-        $match: { userId: mongoose.Types.ObjectId(userId) },
-      },
       {
         $lookup: {
           from: "users",
@@ -169,6 +169,11 @@ const getUserPosts = asyncHandler(async (req, res) => {
       },
       {
         $unwind: "$userDetails",
+      },
+      {
+        $match: {
+          "userDetails._id": userId,
+        },
       },
       {
         $project: {
@@ -183,7 +188,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
           updatedAt: 1,
           "userDetails.firstName": 1,
           "userDetails.lastName": 1,
-          "userDetails.userProfilePic": 1,
+          "userDetails.profilePic": 1,
         },
       },
       {

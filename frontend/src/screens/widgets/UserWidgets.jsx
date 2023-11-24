@@ -6,7 +6,19 @@ import {
   WorkOutlineOutlined,
 } from "@mui/icons-material";
 
-import { Box, Typography, Divider, useTheme, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  useTheme,
+  IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Link,
+} from "@mui/material";
 import UserImage from "../../components/UserImage";
 import FlexBetween from "../../components/FlexBetween";
 import WidgetWrapper from "../../components/WidgetWrapper";
@@ -16,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import {
   useAddSocialProfileMutation,
   useBlockUserMutation,
+  useFetchBlockedUsersMutation,
   useGetUserByIdMutation,
   useGetUserMutation,
   useLogoutMutation,
@@ -54,6 +67,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const string = isBlocked ? "Unblock" : "Block";
 
   const options = [string, "Report", "Cancel"];
+  const options2 = ["Edit Profile", "Blocked Users", "Cancel"];
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -66,6 +80,8 @@ const UserWidget = ({ userId, picturePath }) => {
   const [twitterProfileLink, setTwitterProfileLink] = useState("");
   const [isEditingLinkedin, setIsEditingLinkedin] = useState(false);
   const [profileLink, setProfileLink] = useState("");
+  const [blockedUsers, setBlockedUsers] = useState([]);
+  const [clickFetchblockedUsers, setClickFetchblockedUsers] = useState(false);
 
   const [user, setUser] = useState(null);
   const { palette } = useTheme();
@@ -80,6 +96,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const [unblockUser] = useUnblockUserMutation();
   const [logout] = useLogoutMutation();
   const [addSocialProfile] = useAddSocialProfileMutation();
+  const [fetchBlocedUsers] = useFetchBlockedUsersMutation();
   const hasMounted = useRef(false);
 
   const dispatch = useDispatch();
@@ -109,8 +126,15 @@ const UserWidget = ({ userId, picturePath }) => {
     return null;
   }
 
-  const { firstName, lastName, address, viewedProfile, impressions, friends } =
-    user;
+  const {
+    firstName,
+    lastName,
+    address,
+    viewedProfile,
+    impressions,
+    followers,
+    following,
+  } = user;
 
   const handleBlockUser = async () => {
     try {
@@ -118,24 +142,32 @@ const UserWidget = ({ userId, picturePath }) => {
       const data = await blockUser({ userIdToBlock: userId }).unwrap();
       console.log(data, "cheking");
       dispatch(setCredentials({ userInfo: { ...data } }));
-      toast("user successfully blocked");
     } catch (error) {
       toast(error);
     }
     handleClose();
   };
 
-  const handleUnBlock = async () => {
+  const handleFetchUsers = async () => {
+    setClickFetchblockedUsers(true);
+    setAnchorEl(null);
+    const data = await fetchBlocedUsers().unwrap();
+    console.log(data, "data");
+    setBlockedUsers(data);
+  };
+
+  const handleUnBlock = async (id) => {
     try {
-      console.log("user blocked");
-      const data = await unblockUser({ userIdToUnblock: userId }).unwrap();
-      console.log(data, "cheking");
+      console.log(id, "id");
+      const userIdToUnblock = id === undefined ? userId : id;
+      console.log("user blocked", userIdToUnblock);
+      const data = await unblockUser({ userIdToUnblock }).unwrap();
+      console.log(data.blockedUsers, "cheking");
       dispatch(setCredentials({ userInfo: { ...data } }));
-      toast("user unblocked");
     } catch (error) {
-      toast(error);
+      toast.error(error);
     }
-    handleClose();
+    id === undefined ? handleClose() : navigate(`/profile/${id}`);
   };
 
   async function openChat(e) {
@@ -163,6 +195,7 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+    setClickFetchblockedUsers(false);
   };
 
   const handleReportUser = async () => {
@@ -179,6 +212,10 @@ const UserWidget = ({ userId, picturePath }) => {
       toast(error);
     }
     setReportDialogOpen(false);
+  };
+
+  const handleEditProfile = async () => {
+    navigate("/login-profile");
   };
 
   const handleLinkedinEditClick = () => {
@@ -208,12 +245,11 @@ const UserWidget = ({ userId, picturePath }) => {
         </>
       ) : (
         <>
-          <FlexBetween
-            gap="0.5rem"
-            pb="1.1rem"
-            onClick={() => navigate(`/profile/${userId}`)}
-          >
-            <FlexBetween gap="1rem">
+          <FlexBetween gap="0.5rem" pb="1.1rem">
+            <FlexBetween
+              gap="1rem"
+              onClick={() => navigate(`/profile/${userId}`)}
+            >
               <UserImage image={picturePath} />
               <Box>
                 <Typography
@@ -228,9 +264,6 @@ const UserWidget = ({ userId, picturePath }) => {
                   }}
                 >
                   {firstName} {lastName}
-                </Typography>
-                <Typography color={medium}>
-                  {friends?.length} friends
                 </Typography>
               </Box>
             </FlexBetween>
@@ -316,75 +349,188 @@ const UserWidget = ({ userId, picturePath }) => {
               </>
             ) : (
               <>
-                <ManageAccountsOutlined />
+                <IconButton
+                  aria-label="more"
+                  id="long-button"
+                  aria-controls={open ? "long-menu" : undefined}
+                  aria-expanded={open ? "true" : undefined}
+                  aria-haspopup="true"
+                  onClick={handleClick}
+                >
+                  <ManageAccountsOutlined />
+                </IconButton>
+                <Menu
+                  id="long-menu"
+                  MenuListProps={{
+                    "aria-labelledby": "long-button",
+                  }}
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleClose}
+                  PaperProps={{
+                    style: {
+                      maxHeight: ITEM_HEIGHT * 4.5,
+                      width: "20ch",
+                    },
+                  }}
+                >
+                  {options2.map((option) => (
+                    <MenuItem
+                      key={option}
+                      onClick={
+                        option === "Edit Profile"
+                          ? handleEditProfile
+                          : option === "Blocked Users"
+                          ? handleFetchUsers
+                          : handleClose
+                      }
+                    >
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Menu>
               </>
             )}
           </FlexBetween>
 
           <Divider />
-
-          {/* SECOND ROW */}
           <Box p="1rem 0">
-            <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
-              <LocationOnOutlined fontSize="large" sx={{ color: main }} />
-              <Typography color={medium}>{address}</Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap="1rem">
-              <WorkOutlineOutlined fontSize="large" sx={{ color: main }} />
-              <Typography color={medium}>{address}</Typography>
+            <Box display="flex" gap="1rem" mb="0.5rem">
+              <Typography variant="h5" className="ms-2 text-info">
+                Followers{" "}
+                <Typography className="ms-4" color={medium}>
+                  {followers?.length}
+                </Typography>
+              </Typography>
+              <Typography variant="h5" className="ms-4 text-info">
+                Following{" "}
+                <Typography className="ms-3" color={medium}>
+                  {following?.length}
+                </Typography>
+              </Typography>
             </Box>
           </Box>
-
           <Divider />
 
-          <Divider />
-
-          {/* FOURTH ROW */}
-          <Box p="1rem 0">
-            <Typography fontSize="1rem" color={main} fontWeight="500" mb="1rem">
-              Social Profiles
+          {clickFetchblockedUsers && (
+            <Typography variant="h5" marginY={1}>
+              blocked Accounts{" "}
+              <span className="ms-5 me-2 text-danger">
+                {" "}
+                {blockedUsers.length}
+              </span>
             </Typography>
-
-            <FlexBetween gap="1rem">
-              <FlexBetween gap="1rem">
-                <img
-                  src={linkedinIcon}
-                  alt="linkedin"
-                  onClick={handleLinkedinLinkClick}
-                />
-                <Box>
-                  <Typography color="primary" fontWeight="500">
-                    Linkedin
-                  </Typography>
-                  <Typography color="textSecondary">
-                    Network Platform
-                  </Typography>
+          )}
+          {clickFetchblockedUsers && blockedUsers.length > 0 ? (
+            <>
+              <div
+                style={{
+                  minHeight: "30vh",
+                  height: "40vh",
+                  overscrollBehaviorY: "auto",
+                }}
+              >
+                <Table>
+                  <TableBody>
+                    {blockedUsers.map((user) => (
+                      <TableRow key={user._id}>
+                        <TableCell scope="3" style={{ width: "30%" }}>
+                          <UserImage image={user.profilePic} size="40" />
+                        </TableCell>
+                        <TableCell scope="auto" style={{ width: "40%" }}>
+                          {user.firstName} {user.lastName}
+                        </TableCell>
+                        <TableCell scope="4" style={{ width: "30%" }}>
+                          <button
+                            className="btn btn-outline-primary btn-sm font-xsm"
+                            onClick={() => handleUnBlock(user._id)}
+                          >
+                            <small>Unblock</small>
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <button
+                className="my-3 float-right btn btn-sm btn-danger"
+                onClick={handleClose}
+              >
+                close
+              </button>
+            </>
+          ) : (
+            <>
+              <Box p="1rem 0">
+                <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
+                  <LocationOnOutlined fontSize="large" sx={{ color: main }} />
+                  <Typography color={medium}>{address}</Typography>
                 </Box>
-              </FlexBetween>
-              <IconButton onClick={handleLinkedinEditClick}>
-                <EditOutlined sx={{ color: "primary" }} />
-              </IconButton>
-            </FlexBetween>
-            {isEditingLinkedin && (
-              <Box mb="1rem" gap={2}>
-                <TextField
-                  variant="standard"
-                  id="profileLink"
-                  label="Linkedin Profile Link"
-                  value={profileLink}
-                  onChange={(event) => setProfileLink(event.target.value)}
-                />
-                <Button
-                  className="my-2 ms-2"
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSaveLinkedinLink}
-                >
-                  Save
-                </Button>
+                <Box display="flex" alignItems="center" gap="1rem">
+                  <WorkOutlineOutlined fontSize="large" sx={{ color: main }} />
+                  <Typography color={medium}>{address}</Typography>
+                </Box>
               </Box>
-            )}
-          </Box>
+
+              <Divider />
+
+              <Divider />
+
+              {/* FOURTH ROW */}
+              <Box p="1rem 0">
+                <Typography
+                  fontSize="1rem"
+                  color={main}
+                  fontWeight="500"
+                  mb="1rem"
+                >
+                  Social Profiles
+                </Typography>
+
+                <FlexBetween gap="1rem">
+                  <FlexBetween gap="1rem">
+                    <img
+                      src={linkedinIcon}
+                      alt="linkedin"
+                      onClick={handleLinkedinLinkClick}
+                    />
+                    <Box>
+                      <Typography color="primary" fontWeight="500">
+                        Linkedin
+                      </Typography>
+                      <Typography color="textSecondary">
+                        Network Platform
+                      </Typography>
+                    </Box>
+                  </FlexBetween>
+                  <IconButton onClick={handleLinkedinEditClick}>
+                    <EditOutlined sx={{ color: "primary" }} />
+                  </IconButton>
+                </FlexBetween>
+                {isEditingLinkedin && (
+                  <Box mb="1rem" gap={2}>
+                    <TextField
+                      variant="standard"
+                      id="profileLink"
+                      label="Linkedin Profile Link"
+                      value={profileLink}
+                      onChange={(event) => setProfileLink(event.target.value)}
+                    />
+                    <Button
+                      className="my-2 ms-2"
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSaveLinkedinLink}
+                    >
+                      Save
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            </>
+          )}
+          {/* SECOND ROW */}
         </>
       )}
     </WidgetWrapper>

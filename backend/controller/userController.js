@@ -9,6 +9,7 @@ import otpGenerator from "otp-generator";
 import { verificationMail, recoveryMail } from "../helper/mailer.js";
 import UserReport from "../models/userReports.js";
 import { equal } from "assert";
+import mongoose from "mongoose";
 //storage
 
 const __filename = fileURLToPath(import.meta.url);
@@ -272,15 +273,25 @@ const getUserFriends = asyncHandler(async (req, res) => {
     const { userId } = req.query;
     const user = await User.findById(userId);
 
-    const friends = await Promise.all(
-      user.friends.map((id) => User.findById(id))
+    const followers = await Promise.all(
+      user.followers.map((id) => User.findById(id))
     );
-    const formattedFriends = friends.map(
+    const formattedFollowers = followers.map(
       ({ _id, firstName, lastName, userName, address, profilePic }) => {
         return { _id, firstName, lastName, userName, address, profilePic };
       }
     );
-    res.status(200).json(formattedFriends);
+    const following = await Promise.all(
+      user.following.map((id) => User.findById(id))
+    );
+    const formattedFollowing = following.map(
+      ({ _id, firstName, lastName, userName, address, profilePic }) => {
+        return { _id, firstName, lastName, userName, address, profilePic };
+      }
+    );
+    res
+      .status(200)
+      .json({ followers: formattedFollowers, following: formattedFollowing });
   } catch (err) {
     console.log(err);
     res.status(404).json({ message: err.message });
@@ -288,7 +299,8 @@ const getUserFriends = asyncHandler(async (req, res) => {
 });
 const addFriend = asyncHandler(async (req, res) => {
   try {
-    const { friendId } = req.query;
+    const frId = req.query.friendId;
+    const friendId = new mongoose.Types.ObjectId(frId);
     const id = req.user._id;
 
     if (id === friendId) {
@@ -312,23 +324,30 @@ const addFriend = asyncHandler(async (req, res) => {
     if (!friend) {
       return res.status(404).json({ message: "Friend not found." });
     }
-    if (!user.friends.includes(friendId)) {
-      user.friends.push(friendId);
+    if (!user.following.includes(friendId)) {
+      user.following.push(friendId);
       await user.save();
     }
-    if (!friend.friends.includes(id)) {
-      friend.friends.push(id);
+    if (!friend.followers.includes(id)) {
+      friend.followers.push(id);
       await friend.save();
     }
 
-    const friends = await User.find({ _id: { $in: user.friends } });
-    const formattedFriends = friends.map(
+    const following = await User.find({ _id: { $in: user.following } });
+    const formattedFollowing = following.map(
       ({ _id, firstName, lastName, userName, address, profilePic }) => {
         return { _id, firstName, lastName, userName, address, profilePic };
       }
     );
-
-    res.status(200).json(formattedFriends);
+    const followers = await User.find({ _id: { $in: user.followers } });
+    const formattedFollowers = followers.map(
+      ({ _id, firstName, lastName, userName, address, profilePic }) => {
+        return { _id, firstName, lastName, userName, address, profilePic };
+      }
+    );
+    res
+      .status(200)
+      .json({ followers: formattedFollowers, following: formattedFollowing });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error." });
@@ -338,29 +357,51 @@ const addFriend = asyncHandler(async (req, res) => {
 const removeFriend = asyncHandler(async (req, res) => {
   try {
     console.log(req.query, "<= remove controller");
-    const { friendId } = req.query;
+    const frId = req.query.friendId;
+    const friendId = new mongoose.Types.ObjectId(frId);
     const id = req.user._id;
+    console.log(friendId);
     console.log(id);
 
     const user = await User.findById(id);
-    const friend = await User.findById(friendId);
 
-    if (user.friends.includes(friendId)) {
-      user.friends = user.friends.filter((friend) => friend !== friendId);
-      friend.friends = friend.friends.filter((friendId) => friendId !== id);
-      await user.save();
-      await friend.save();
-
-      const friends = await Promise.all(
-        user.friends.map((id) => User.findById(id))
+    if (user.following.includes(friendId)) {
+      user.following = user.following.filter(
+        (friend) => friend.toString() !== friendId.toString()
       );
-      const formattedFriends = friends.map(
+
+      const friend = await User.findById(friendId);
+      if (friend) {
+        friend.followers = friend.followers.filter(
+          (followerId) => followerId.toString() !== id.toString()
+        );
+        console.log(friend.followers, "followers");
+
+        await Promise.all([user.save(), friend.save()]);
+        console.log("checking");
+      } else {
+        console.log("friend model not working");
+      }
+
+      const following = await Promise.all(
+        user.following.map((id) => User.findById(id))
+      );
+      const formattedFollowing = following.map(
         ({ _id, firstName, lastName, userName, address, profilePic }) => {
           return { _id, firstName, lastName, userName, address, profilePic };
         }
       );
-
-      res.status(200).json(formattedFriends);
+      const followers = await Promise.all(
+        user.followers.map((id) => User.findById(id))
+      );
+      const formattedFollowers = followers.map(
+        ({ _id, firstName, lastName, userName, address, profilePic }) => {
+          return { _id, firstName, lastName, userName, address, profilePic };
+        }
+      );
+      res
+        .status(200)
+        .json({ followers: formattedFollowers, following: formattedFollowing });
     } else {
       res.status(400).json({ message: "Friend not found in your list." });
     }
@@ -481,6 +522,34 @@ const addSocialProfile = asyncHandler(async (req, res) => {
   }
 });
 
+const fetchBlockedUsers = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    const blockedUsersDetails = await User.aggregate([
+      {
+        $match: {
+          _id: { $in: user.blockedUsers },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          profilePic: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json(blockedUsersDetails);
+  } catch (error) {
+    console.error("Error fetching blocked users:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export {
   authUser,
   searchUser,
@@ -503,4 +572,5 @@ export {
   blockUser,
   unblockUser,
   addSocialProfile,
+  fetchBlockedUsers,
 };

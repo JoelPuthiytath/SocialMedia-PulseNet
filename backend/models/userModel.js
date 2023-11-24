@@ -37,7 +37,10 @@ const userSchema = new mongoose.Schema(
     profilePic: {
       type: String,
     },
-    friends: {
+    following: {
+      type: Array,
+    },
+    followers: {
       type: Array,
     },
     address: {

@@ -31,7 +31,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const { userInfo } = useSelector((state) => state.authUser);
   const { _id: userId } = userInfo;
   // console.log(userId, "<- checking userId");
-  const { friends } = userInfo;
+  const { following } = userInfo;
   // console.log(friends, "<== friends in friend component");
 
   const { palette } = useTheme();
@@ -50,7 +50,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
 
   const isFriend =
     userId !== friendId
-      ? friends.find((friend) => friend._id === friendId)
+      ? following.find((friend) => friend._id === friendId)
       : null;
 
   // console.log(isFriend, "<== checking isFirend ");
@@ -58,7 +58,9 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const patchFriend = async () => {
     try {
       const data = await addFriend({ friendId }).unwrap();
-      dispatch(setFriends({ friends: data }));
+      dispatch(
+        setFriends({ followers: data.followers, following: data.following })
+      );
       console.log(data, "for checking the data"); // Fixed typo here
     } catch (error) {
       console.log(error.data.message, "checking add friend error");
@@ -117,7 +119,8 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
             <PostMenu postId={postId} friendId={friendId} />
           ) : (
             <IconButton onClick={patchFriend}>
-              <PersonAddOutlined sx={{ color: primaryDark }} />
+              {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
+              <span className="btn btn-sm btn-primary"> Follow</span>
             </IconButton>
           )}
         </>

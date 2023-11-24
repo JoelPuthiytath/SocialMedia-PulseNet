@@ -151,6 +151,12 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    fetchBlockedUsers: builder.mutation({
+      query: () => ({
+        url: `${USERS_URL}/fetchBlockedUsers`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -175,4 +181,5 @@ export const {
   useReportUserMutation,
   useBlockUserMutation,
   useUnblockUserMutation,
+  useFetchBlockedUsersMutation,
 } = usersApiSlice;

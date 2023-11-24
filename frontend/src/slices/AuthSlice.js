@@ -29,11 +29,22 @@ const AuthSlice = createSlice({
     },
     setFriends: (state, action) => {
       if (state.userInfo) {
-        state.userInfo.friends = action.payload.friends;
+        state.userInfo.following = action.payload.following;
+        state.userInfo.followers = action.payload.followers;
       } else {
         console.error("user friends non-existent :(");
       }
     },
+    // setFollowers: (state, action) => {
+
+    
+    //   if (state.userInfo) {
+    //     state.userInfo.followers = action.payload.followwers;
+    //   } else {
+    //     console.error("user friends non-existent :(");
+    //   }
+    // },
+
     setNotification: (state, action) => {
       console.log("setnotifacion......");
       const newNotification = {
@@ -96,6 +107,8 @@ export const {
   setMode,
   setCredentials,
   clearCredentials,
+  // setFollowers,
+  // setFollowing,
   setFriends,
   DeleteUser,
   setNotification,
