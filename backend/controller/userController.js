@@ -454,23 +454,40 @@ const reportUser = asyncHandler(async (req, res) => {
 
 const blockUser = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { userIdToBlock } = req.body;
+  const utb = req.body.userIdToBlock;
+  const userIdToBlock = new mongoose.Types.ObjectId(utb);
+  console.log(userIdToBlock, "userIdToBlock");
 
   try {
     const user = await User.findById(userId);
     const friend = await User.findById(userIdToBlock);
+
     if (!user) {
       throw new Error("User not found");
     }
+
     if (!user.blockedUsers.includes(userIdToBlock)) {
       user.blockedUsers.push(userIdToBlock);
-      if (user.friends.includes(userIdToBlock)) {
-        user.friends = user.friends.filter(
-          (friend) => friend !== userIdToBlock
+
+      if (user.following.includes(userIdToBlock)) {
+        user.following = user.following.filter(
+          (friendId) => friendId.toString() !== userIdToBlock.toString()
         );
-        friend.friends = friend.friends.filter(
-          (friendId) => friendId !== userId
+
+        // Corrected the variable name here
+        user.followers = user.followers.filter(
+          (followerId) => followerId.toString() !== userIdToBlock.toString()
         );
+
+        friend.followers = friend.followers.filter(
+          (followerId) => followerId.toString() !== userId.toString()
+        );
+
+        friend.following = friend.following.filter(
+          (followingId) => followingId.toString() !== userId.toString()
+        );
+
+        await friend.save(); // Save changes to the friend object
       }
 
       const result = await user.save();
@@ -480,14 +497,16 @@ const blockUser = asyncHandler(async (req, res) => {
       res.status(400).json({ error: "User is already blocked" });
     }
   } catch (error) {
-    console.log("Error blocking User:", error);
+    console.log("Error blocking user:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 const unblockUser = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { userIdToUnblock } = req.body;
+
+  const utub = req.body.userIdToUnblock;
+  const userIdToUnblock = new mongoose.Types.ObjectId(utub);
   console.log(userIdToUnblock, "checking the id");
   try {
     const user = await User.findById(userId);
@@ -495,7 +514,7 @@ const unblockUser = asyncHandler(async (req, res) => {
       throw new Error("User not found");
     }
     user.blockedUsers = user.blockedUsers.filter(
-      (id) => !id.equals(userIdToUnblock)
+      (id) => !id.equals(userIdToUnblock.toString())
     );
     const result = await user.save();
     res.status(200).json(result);

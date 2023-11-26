@@ -28,12 +28,13 @@ import {
   useDeleteMessageMutation,
   useGetMessagesMutation,
 } from "../../slices/messageApiSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import lottie from "lottie-web";
 import typingAnimation from "../../animation/animation.json";
 import Peer from "peerjs";
 import { toast } from "react-toastify";
 import VideoCallModal from "../videoCallModal";
+import { useSelector } from "react-redux";
 
 const Message = ({
   chat,
@@ -78,6 +79,8 @@ const Message = ({
   const scroll = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
+
+  const { userInfo } = useSelector((state) => state.authUser);
 
   const navigate = useNavigate();
 
@@ -494,23 +497,54 @@ const Message = ({
           <Divider
             style={{ borderBottom: "4px solid lightGray" }} // Increase the border thickness here
           />
+          {userData.blockedUsers.includes(currentUser) ? (
+            <>
+              <Typography
+                variant="h3"
+                className="d-flex aligh-items-center justify-content-center"
+              >
+                can't send messages ! You are blocked
+              </Typography>
+            </>
+          ) : userInfo.blockedUsers.includes(receiverId) ? (
+            <>
+              <Typography
+                variant="h4"
+                className="d-flex aligh-items-center justify-content-center"
+              >
+                Unblock the User to send messages
+                <Link
+                  className="text-decoration-none ms-3"
+                  to={`/profile/${receiverId}`}
+                >
+                  Click Here
+                </Link>
+              </Typography>
+            </>
+          ) : (
+            <>
+              <div className="chat-sender mb-2">
+                <div className="input-container">
+                  <InputEmoji
+                    className="sender-input"
+                    value={newMessage}
+                    // onChange={handleChange}
+                    onChange={(newMessage) => handleChange(newMessage)}
+                  />
+                </div>
 
-          <div className="chat-sender mb-2">
-            <div className="input-container">
-              <InputEmoji
-                className="sender-input"
-                value={newMessage}
-                // onChange={handleChange}
-                onChange={(newMessage) => handleChange(newMessage)}
-              />
-            </div>
-
-            <IconButton onClick={handleSend}>
-              <SendIcon
-                style={{ color: "#0095F6", height: "1.8rem", width: "1.8rem" }}
-              />
-            </IconButton>
-          </div>
+                <IconButton onClick={handleSend}>
+                  <SendIcon
+                    style={{
+                      color: "#0095F6",
+                      height: "1.8rem",
+                      width: "1.8rem",
+                    }}
+                  />
+                </IconButton>
+              </div>
+            </>
+          )}
         </>
       ) : (
         <>

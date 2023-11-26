@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import ChatModel from "../models/chatModel.js";
+import User from "../models/userModel.js";
 
 // const createChat = asyncHandler(async (req, res) => {
 //   console.log(req.body);
@@ -21,18 +22,26 @@ const createChat = asyncHandler(async (req, res) => {
 
   const senderId = req.body.senderId;
   const receiverId = req.body.receiverId;
+  const sender = await User.findById(senderId);
+  const receiver = await User.findById(receiverId);
 
-  // Check if a chat with the same members already exists
+  if (
+    sender.blockedUsers.includes(receiverId) ||
+    receiver.blockedUsers.includes(senderId)
+  ) {
+    res
+      .status(403)
+      .json({ message: "You can't make a chat with blocked user" });
+  }
+
   const existingChat = await ChatModel.findOne({
     members: { $all: [senderId, receiverId] },
   });
 
   if (existingChat) {
-    // A chat with the same members already exists
-    console.log("chat Already existed");
+    console.log("Chat already exists");
     res.status(200).json(existingChat);
   } else {
-    // Create a new chat
     const newChat = new ChatModel({
       members: [senderId, receiverId],
     });

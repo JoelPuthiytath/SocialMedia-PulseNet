@@ -57,8 +57,6 @@ const ITEM_HEIGHT = 38;
 
 const UserWidget = ({ userId, picturePath }) => {
   const { userInfo } = useSelector((state) => state.authUser);
-  console.log(userInfo, "userInfo");
-  console.log(userId, "userId");
 
   const isBlocked = userInfo.blockedUsers.some(
     (blockedUser) => blockedUser === userId
@@ -115,11 +113,11 @@ const UserWidget = ({ userId, picturePath }) => {
   };
 
   useEffect(() => {
-    if (!hasMounted.current) {
-      getUserInfo();
-      console.log("haii");
-      hasMounted.current = true;
-    }
+    // if (!hasMounted.current) {
+    getUserInfo();
+    console.log("haii");
+    //   hasMounted.current = true;
+    // }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user) {
@@ -139,13 +137,31 @@ const UserWidget = ({ userId, picturePath }) => {
   const handleBlockUser = async () => {
     try {
       console.log("user blocked");
-      const data = await blockUser({ userIdToBlock: userId }).unwrap();
+      const userIdToBlock = userId;
+      console.log(userIdToBlock, "check the user id");
+      const data = await blockUser({ userIdToBlock }).unwrap();
       console.log(data, "cheking");
       dispatch(setCredentials({ userInfo: { ...data } }));
     } catch (error) {
       toast(error);
     }
     handleClose();
+  };
+
+  const handleUnBlock = async () => {
+    try {
+      // const userIdToUnblock = id === undefined ? userId : id;
+      const userIdToUnblock = userId;
+      console.log("user blocked", userIdToUnblock);
+      const data = await unblockUser({ userIdToUnblock }).unwrap();
+      console.log(data, "cheking........");
+      dispatch(setCredentials({ userInfo: { ...data } }));
+    } catch (error) {
+      console.log(error);
+    }
+    handleClose();
+
+    // id === undefined ? handleClose() : navigate(`/profile/${id}`);
   };
 
   const handleFetchUsers = async () => {
@@ -156,28 +172,20 @@ const UserWidget = ({ userId, picturePath }) => {
     setBlockedUsers(data);
   };
 
-  const handleUnBlock = async (id) => {
-    try {
-      console.log(id, "id");
-      const userIdToUnblock = id === undefined ? userId : id;
-      console.log("user blocked", userIdToUnblock);
-      const data = await unblockUser({ userIdToUnblock }).unwrap();
-      console.log(data.blockedUsers, "cheking");
-      dispatch(setCredentials({ userInfo: { ...data } }));
-    } catch (error) {
-      toast.error(error);
-    }
-    id === undefined ? handleClose() : navigate(`/profile/${id}`);
-  };
-
   async function openChat(e) {
     e.preventDefault();
     const senderId = userInfo._id;
     const receiverId = userId;
     console.log(senderId, "senderId");
     console.log(receiverId, "receiverId");
-    await createChat({ senderId, receiverId }).unwrap();
-    navigate("/messenger");
+    try {
+      await createChat({ senderId, receiverId }).unwrap();
+
+      navigate("/messenger");
+    } catch (error) {
+      console.log(error);
+      toast.error(error.data.message);
+    }
   }
 
   const handleReportOption = () => {

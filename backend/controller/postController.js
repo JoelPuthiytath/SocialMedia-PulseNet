@@ -97,9 +97,11 @@ const getFeedPosts = asyncHandler(async (req, res) => {
   try {
     const user = await User.findById(userId).populate("blockedUsers");
     const blockedUserIds = await User.find({ blocked: true }).distinct("_id");
+
     const allBlockedUserIds = [
       ...user.blockedUsers.map((blockedUser) => blockedUser._id),
       ...blockedUserIds,
+      // ...manyUser.blockedUsers.some((blockedUser) => blockedUser === userId),
     ];
     const posts = await Post.aggregate([
       {
@@ -117,6 +119,11 @@ const getFeedPosts = asyncHandler(async (req, res) => {
       },
       {
         $unwind: "$userDetails",
+      },
+      {
+        $match: {
+          "userDetails.blockedUsers": { $nin: [userId] },
+        },
       },
       {
         $project: {
