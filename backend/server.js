@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
+
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("tiny"));
@@ -33,7 +34,17 @@ app.use("/api/post", postRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/message", messageRouter);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
+  );
+} else {
+  console.log("haii");
+  console.log(__dirname);
+  app.get("/", (req, res) => res.send("server is running"));
+}
 app.use(notFound);
 app.use(errorHandler);
-app.get("/", (req, res) => res.send("server is running"));
 app.listen(port, () => console.log("connected to the port" + port));

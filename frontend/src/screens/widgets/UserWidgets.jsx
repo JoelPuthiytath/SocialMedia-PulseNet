@@ -48,7 +48,6 @@ import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
 
 import linkedinIcon from "../../assets/img/linkedin.png";
-import twitterIcon from "../../assets/img/twitter.png";
 import { useCreateChatMutation } from "../../slices/chatApiSlice";
 import { clearCredentials, setCredentials } from "../../slices/AuthSlice";
 import { useRef } from "react";

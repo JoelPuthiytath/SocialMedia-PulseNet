@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const io = require("socket.io")(8800, {
   cors: {
-    origin: "http://localhost:5000",
+    origin: process.env.CLIENT_URL || "http://localhost:5000",
     methods: ["GET", "POST"],
   },
 });
@@ -75,15 +75,17 @@ io.on("connection", (socket) => {
     }
   );
 
-  // entho ezhuthan onndddddd
   socket.emit("me", socket.id);
 
   socket.on("callUser", (data) => {
-    console.log(data.userToCall, "userToCall id is here");
+    console.log("Received callUser event:", data);
+
     const userToCall = activeUsers.find(
       (user) => user.userId === data.userToCall
     );
-    console.log(data, "call user data checking");
+
+    console.log("User to call:", userToCall);
+
     if (userToCall) {
       io.to(userToCall.socketId).emit("callUser", {
         signal: data.signalData,

@@ -1,4 +1,9 @@
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import avatar from "../../../assets/img/Profile.png";
 import styles from "./styles/Username.module.css";
@@ -6,7 +11,7 @@ import extend from "./styles/profile.module.css";
 import toast, { Toaster } from "react-hot-toast";
 import { useFormik } from "formik";
 import { useState, useEffect } from "react";
-import convertTobase64 from "./helper/convert";
+import convertToBase64 from "./helper/convert";
 import {
   useUpdateUserMutation,
   useEmailVerifyMutation,
@@ -100,9 +105,46 @@ const Profile = () => {
   });
 
   const onUpload = async (e) => {
-    const base64 = await convertTobase64(e.target.files[0]);
+    const base64 = await convertToBase64(e.target.files[0], 400);
+    console.log(base64, "base^3");
     setFile(base64);
   };
+
+  // const onUpload = async (e) => {
+  //   const file = e.target.files[0];
+
+  //   const resizedBase64 = await resizeImage(file);
+  //   setFile(resizedBase64);
+  // };
+
+  // const resizeImage = async () => {
+  //   const base64 = await convertTobase64(file, 142, 135);
+
+  //   const img = new Image();
+  //   img.src = base64;
+
+  //   return new Promise((resolve) => {
+  //     img.onload = () => {
+  //       const maxWidth = 142;
+  //       const maxHeight = 135;
+  //       const { width, height } = calculateAspectRatioFit(
+  //         img.width,
+  //         img.height,
+  //         maxWidth,
+  //         maxHeight
+  //       );
+
+  //       const canvas = document.createElement("canvas");
+  //       const ctx = canvas.getContext("2d");
+  //       canvas.width = width;
+  //       canvas.height = height;
+
+  //       ctx.drawImage(img, 0, 0, width, height);
+
+  //       resolve(canvas.toDataURL("image/jpeg"));
+  //     };
+  //   });
+  // };
 
   return (
     <div className="container mx-auto">
@@ -126,7 +168,7 @@ const Profile = () => {
                 <div className="profile flex justify-center py-3">
                   <label htmlFor="profile">
                     <img
-                      src={userInfo?.profilePic || file || avatar}
+                      src={file || userInfo?.profilePic || avatar}
                       className={`${styles.profile_img} ${extend.profile_img}`}
                       alt="avatar"
                     />
@@ -193,9 +235,9 @@ const Profile = () => {
                 >
                   <span className="text-black-500">
                     come back later?{" "}
-                    <button className="text-red-500" to="/">
+                    <Link className="text-red-500" to="/">
                       Logout
-                    </button>
+                    </Link>
                   </span>
                 </div>
               </form>

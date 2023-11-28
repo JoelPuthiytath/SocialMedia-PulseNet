@@ -65,11 +65,11 @@ const PostsWidget = ({ userId, isProfile, socket }) => {
               key={_id}
               postId={_id}
               postUserId={userId}
-              name={`${userDetails.firstName} ${userDetails.lastName}`}
+              name={`${userDetails?.firstName} ${userDetails?.lastName}`}
               description={description}
               location={location}
               picturePath={picturePath}
-              userProfilePic={userDetails.profilePic}
+              userProfilePic={userDetails?.profilePic}
               likes={likes}
               comments={comments}
               socket={socket}

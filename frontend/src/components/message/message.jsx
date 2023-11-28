@@ -65,7 +65,7 @@ const Message = ({
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
   const [VideoCall, setVideoCall] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIncomingCall, setIsIncomingCall] = useState(false);
   const [callAccepted, setCallAccepted] = useState(false);
   const [caller, setCaller] = useState("");
@@ -79,6 +79,7 @@ const Message = ({
   const scroll = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
+  const myVideo = useRef();
 
   const { userInfo } = useSelector((state) => state.authUser);
 
@@ -222,9 +223,17 @@ const Message = ({
   }, [messages]);
 
   useEffect(() => {
+    // navigator.mediaDevices
+    //   .getUserMedia({ video: true, audio: true })
+    //   .then((stream) => {
+    //     setStream(stream);
+    //     myVideo.current.srcObject = stream;
+    //   });
+
     socket.current?.on("me", (userId) => {
       setMe(userId);
     });
+
     socket.current?.on("callUser", (data) => {
       console.log(data, "this is the data you're looking for");
       console.log("just checking");
@@ -233,32 +242,104 @@ const Message = ({
       setCaller(data.from);
       setCallerSignal(data.signal);
     });
+
+    socket.current?.on("callAccepted", (signal) => {
+      console.log("Call accepted signal received:", signal);
+      connectionRef.current.signal(signal);
+      setCallAccepted(true);
+    });
   }, []);
 
+  const answerCall = () => {
+    setVideoCall(true);
+    setIsIncomingCall(true);
+    setCaller(userData.userId);
+    setCallerSignal(callerSignal);
+
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: stream,
+    });
+
+    peer.on("signal", (data) => {
+      console.log("Answering call - Signal data:", data);
+      socket.current.emit("answerCall", {
+        signal: data,
+        to: caller, // Send the signal to the caller
+      });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      console.log("Received remote stream:", remoteStream);
+      userVideo.current.srcObject = remoteStream;
+    });
+
+    peer.signal(callerSignal);
+
+    connectionRef.current = peer;
+
+    setCallAccepted(true);
+  };
+
   const callUser = () => {
-    console.log("inside call user");
+    console.log("Calling user");
+
+    if (!stream) {
+      console.error("No stream available");
+      return;
+    }
 
     const peer = new Peer({
       initiator: true,
       stream: stream,
     });
 
-    peer.on("signal", (data) => {
-      socket.current.emit("callUser", {
-        userToCall: receiverId,
-        signalData: data,
-        from: me,
-        name: userData.userName,
+    const sendSignal = () => {
+      console.log(
+        "inside sendSignal",
+        currentUser,
+        receiverId,
+        userData.userName
+      );
+      peer.on("signal", (data) => {
+        console.log("Peer signal:", data);
+
+        socket.current.emit("callUser", {
+          userToCall: receiverId,
+          signalData: data,
+          from: currentUser,
+          name: userData.userName,
+        });
       });
+    };
+
+    peer.on("open", (id) => {
+      console.log("Peer connection opened with ID:", id);
+      sendSignal();
     });
 
     peer.on("stream", (remoteStream) => {
+      console.log("Received remote stream:", remoteStream);
       userVideo.current.srcObject = remoteStream;
     });
 
-    socket.current?.on("callAccepted", (signal) => {
+    peer.on("error", (err) => {
+      console.error("Peer error:", err);
+    });
+
+    peer.on("close", () => {
+      console.log("Peer connection closed");
+      // Handle cleanup and UI updates when the call ends
+      setCallEnded(true);
+      setIsModalOpen(false);
+      setVideoCall(false);
+    });
+
+    socket.current.on("callAccepted", (signal) => {
+      console.log("Call accepted signal received:", signal);
+      peer.signal(signal); // Signal the peer to complete the connection
       setCallAccepted(true);
-      peer.signal(signal);
     });
 
     connectionRef.current = peer;
@@ -275,10 +356,13 @@ const Message = ({
   };
 
   const handleCallClick = () => {
-    callUser();
-    setIsModalOpen(true);
-    setVideoCall(true);
-    console.log(VideoCall, "video call");
+    // callUser();
+    // setIsModalOpen(true);
+    // setVideoCall(true);
+    // console.log(VideoCall, "video call");
+    toast.warning(
+      "🚧 Feature in progress! We're working hard behind the scenes. Thanks for your patience!"
+    );
   };
 
   const handleActionClick = async (actionName, messageId) => {
@@ -309,7 +393,7 @@ const Message = ({
     setVideoCall(false);
     connectionRef.current.destroy();
   };
-
+  console.log(isIncomingCall, "incoming call");
   return (
     <>
       {userData && chat ? (
@@ -349,11 +433,13 @@ const Message = ({
                     >
                       {userData?.userName}
                     </Typography>
+
                     <Typography color={medium} fontSize="0.75rem">
                       {online ? "Online" : userData?.address}
                     </Typography>
                   </Box>
                 </Grid>
+
                 <Grid
                   item
                   xs={3}
@@ -369,18 +455,20 @@ const Message = ({
                 </Grid>
               </Grid>
             </div>
-            {VideoCall && (
+
+            {/* {(VideoCall || isIncomingCall) && (
               <VideoCallModal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 isIncomingCall={isIncomingCall}
-                setStream={setStream}
+                myVideo={myVideo}
                 callAccepted={callAccepted}
                 callEnded={callEnded}
                 userVideo={userVideo}
                 onCallEnd={handleCallEnd}
+                answerCall={answerCall}
               />
-            )}
+            )} */}
 
             <div className="messages-container">
               {messages &&

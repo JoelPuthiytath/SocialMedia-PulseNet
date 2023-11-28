@@ -23,23 +23,14 @@ const ModalContent = styled("div")(({ theme }) => ({
 const VideoCallModal = ({
   open,
   onClose,
-  setStream,
+  myVideo,
   callAccepted,
   isIncomingCall,
   callEnded,
   userVideo,
   onCallEnd,
+  answerCall, // Add answerCall prop
 }) => {
-  const myVideo = useRef();
-
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        setStream(stream);
-        myVideo.current.srcObject = stream;
-      });
-  }, []);
   return (
     <StyledModal
       open={open}
@@ -61,6 +52,9 @@ const VideoCallModal = ({
               />
             </div>
             <p id="video-call-description">John Doe is calling...</p>
+            <button color="#65a30d" className="btn" onClick={answerCall}>
+              Accept
+            </button>
             <div>
               <button onClick={onCallEnd}>
                 <CallEndIcon fontSize="large" color="error" />
@@ -71,33 +65,16 @@ const VideoCallModal = ({
           <>
             <h2 id="video-call-modal">Ongoing Video Call</h2>
             <div className="video">
-              {callAccepted && !callEnded ? (
-                <>
-                  <video
-                    className="my-3"
-                    playsInline
-                    ref={userVideo}
-                    autoPlay
-                    style={{ width: "300px" }}
-                  />
-                  <span className="mt-3" id="video-call-description">
-                    You are in a call with jinto.
-                  </span>
-                </>
-              ) : (
-                <>
-                  <video
-                    className="my-3"
-                    playsInline
-                    ref={myVideo}
-                    autoPlay
-                    style={{ width: "300px" }}
-                  />
-                  <span className="mt-3" id="video-call-description">
-                    Calling
-                  </span>
-                </>
-              )}
+              <video
+                className="my-3"
+                playsInline
+                ref={myVideo}
+                autoPlay
+                style={{ width: "300px" }}
+              />
+              <span className="mt-3" id="video-call-description">
+                Calling
+              </span>
             </div>
 
             <div>
