@@ -225,7 +225,7 @@ const PostWidget = ({
           height="auto"
           alt="post"
           style={{ borderRadius: "0.75rem", marginTop: "0.75rem" }}
-          src={`http://localhost:3000/image/${picturePath}`}
+          src={`/image/${picturePath}`}
         />
         // <Typography>{picturePath}</Typography>
       )}

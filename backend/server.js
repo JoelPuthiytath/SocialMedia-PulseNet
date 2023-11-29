@@ -28,7 +28,9 @@ app.use(cors());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("tiny"));
-app.use("/image", express.static(path.join(__dirname, "./utils/uploads")));
+const absolutePath = path.resolve(__dirname, "utils/uploads");
+app.use("/image", express.static(absolutePath));
+
 app.use("/api/users", userRouter);
 app.use("/api/post", postRouter);
 app.use("/api/admin", adminRouter);
@@ -37,9 +39,9 @@ app.use("/api/message", messageRouter);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
-  );
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+  });
 } else {
   console.log("haii");
   console.log(__dirname);
