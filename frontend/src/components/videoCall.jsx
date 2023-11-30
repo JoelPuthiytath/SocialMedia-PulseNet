@@ -35,14 +35,13 @@ const Videocall = () => {
 
   const receiverId = chat?.members?.find((id) => id !== currentUser);
   useEffect(() => {
-    socket.current = io("http://localhost:3000");
+    socket.current = io(process.env.REACT_APP_HOSTED_URL);
     socket.current.emit("new-user-add", userInfo._id);
 
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setStream(stream);
-       
 
         // Check if myVideo.current is defined before setting srcObject
         if (myVideo.current) {
@@ -58,17 +57,13 @@ const Videocall = () => {
     });
 
     socket.current.on("callUser", (data) => {
-  
       setReceivingCall(true);
       setCaller(data.from);
       setCallerSignal(data.signal);
     });
   }, []);
 
-
-
   const callUser = () => {
- 
     const peer = new Peer({
       initiator: true,
       stream: stream,

@@ -38,7 +38,6 @@ const Messenger = () => {
 
   // const socket = useSelector(selectSocket);
   const socket = useRef();
- 
 
   const getChats = async () => {
     try {
@@ -54,11 +53,10 @@ const Messenger = () => {
   }, [userInfo]);
 
   useEffect(() => {
-    socket.current = io("http://localhost:3000");
+    socket.current = io(process.env.REACT_APP_HOSTED_URL);
     socket.current.emit("new-user-add", userInfo._id);
     socket.current.on("get-users", (users) => {
       setOnlineUsers(users);
-    
     });
     return () => {
       if (socket.current) {
