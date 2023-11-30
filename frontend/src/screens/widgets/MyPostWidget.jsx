@@ -79,7 +79,7 @@ const MyPostWidget = ({ profilePic }) => {
             const { country, county, state } =
               response.data.results[0].components;
 
-            console.log(country, "this is the city you are looking for");
+            
             setLocation(`${state}, ${county}`);
           } catch (error) {
             console.error("Error fetching city:", error.message);

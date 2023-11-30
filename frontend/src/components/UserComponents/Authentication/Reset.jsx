@@ -23,7 +23,7 @@ const Reset = () => {
       const { userName } = users;
       try {
         const res = await resetPassword({ userName, password });
-        console.log(res);
+     
         if (res?.data?.success) {
           toast.success(res?.message);
           navigate("/password");

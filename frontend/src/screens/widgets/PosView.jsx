@@ -60,9 +60,9 @@ const PosViewModal = ({
   const [createChat] = useCreateChatMutation();
   const [addMessage] = useAddMessagesMutation();
 
-  console.log(likes, "likes");
+
   //   const postUserId = postData.userId;
-  console.log(postUserId, "postUserId");
+
   //   const navigate = useNavigate();
 
   // const [getFriends] = useGetFriendsMutation();
@@ -93,7 +93,7 @@ const PosViewModal = ({
   const openShareModal = () => {
     setShareModalOpen(true);
 
-    console.log("share model is opend", isShareModalOpen);
+    // console.log("share model is opend", isShareModalOpen);
   };
 
   const closeShareModal = () => {
@@ -124,10 +124,10 @@ const PosViewModal = ({
 
         const senderId = userInfo._id;
         let receiverId = selectedFriend._id;
-        console.log(senderId, "senderId");
+        // console.log(senderId, "senderId");
         try {
           const data = await createChat({ senderId, receiverId }).unwrap();
-          console.log(data);
+          // console.log(data);
           const message = {
             senderId: senderId,
             text: postLink,
@@ -139,9 +139,7 @@ const PosViewModal = ({
           console.log(error);
         }
 
-        console.log(
-          `Sharing post link "${postLink}" with ${selectedFriend.userName}`
-        );
+     
       });
     } else {
       // Handle the case where no user is selected
@@ -178,7 +176,7 @@ const PosViewModal = ({
       };
       const data = await addPostComment(comment).unwrap();
       dispatch(setPost({ post: data }));
-      console.log("Comment submitted:", commentInput);
+      // console.log("Comment submitted:", commentInput);
 
       setCommentInput("");
     } catch (error) {

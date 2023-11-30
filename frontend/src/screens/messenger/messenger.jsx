@@ -38,7 +38,7 @@ const Messenger = () => {
 
   // const socket = useSelector(selectSocket);
   const socket = useRef();
-  console.log(socket, "this is the socket you are looking for");
+ 
 
   const getChats = async () => {
     try {
@@ -54,11 +54,11 @@ const Messenger = () => {
   }, [userInfo]);
 
   useEffect(() => {
-    socket.current = io("http://localhost:8800");
+    socket.current = io("http://localhost:3000");
     socket.current.emit("new-user-add", userInfo._id);
     socket.current.on("get-users", (users) => {
       setOnlineUsers(users);
-      console.log("online users", users);
+    
     });
     return () => {
       if (socket.current) {

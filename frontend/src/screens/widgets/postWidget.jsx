@@ -60,7 +60,6 @@ const PostWidget = ({
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.authUser);
 
-  console.log(socket, "socket in postWidget");
   // console.log(userInfo, "<postwidget");
   const [likeAndUnlikePost] = useLikeAndUnlikePostMutation();
   const [addPostComment] = useAddPostCommentMutation();
@@ -97,8 +96,6 @@ const PostWidget = ({
 
   const openShareModal = () => {
     setShareModalOpen(true);
-
-    console.log("share model is opend", isShareModalOpen);
   };
 
   const closeShareModal = () => {
@@ -130,10 +127,10 @@ const PostWidget = ({
 
         const senderId = userInfo._id;
         let receiverId = selectedFriend._id;
-        console.log(senderId, "senderId");
+
         try {
           const data = await createChat({ senderId, receiverId }).unwrap();
-          console.log(data);
+
           const message = {
             senderId: senderId,
             text: postLink,
@@ -151,7 +148,6 @@ const PostWidget = ({
     }
   };
   const handleNotification = (type) => {
-    console.log("sendNotification");
     if (postUserId === userInfo._id) return null;
     socket.current.emit("sendNotification", {
       senderId: userInfo.userName,
@@ -178,7 +174,6 @@ const PostWidget = ({
   };
 
   const handleCommentSubmit = async () => {
-    console.log("comment sesssion", commentInput);
     if (commentInput.trim() === "") {
       console.log("comment is empty");
       return;
@@ -192,7 +187,6 @@ const PostWidget = ({
       };
       const data = await addPostComment(comment).unwrap();
       dispatch(setPost({ post: data }));
-      console.log("Comment submitted:", commentInput);
 
       setCommentInput("");
       handleNotification(2);
@@ -327,8 +321,8 @@ const PostWidget = ({
               overflowY: "scroll",
               scrollbarWidth: "none",
               WebkitOverflowScrolling: "touch",
-              "-ms-overflow-style": "none",
-              "&::-webkit-scrollbar": {
+              msOverflowStyle: "none",
+              "&::WebkitScrollbar": {
                 display: "none",
               },
             }}

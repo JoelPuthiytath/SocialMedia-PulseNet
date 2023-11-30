@@ -21,7 +21,7 @@ const Post = () => {
       }
     };
     fetchPostDetails();
-    console.log(postData);
+ 
   }, [postId]);
 
   const handleCloseModal = () => {

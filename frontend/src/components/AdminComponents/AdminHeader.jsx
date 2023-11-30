@@ -33,7 +33,7 @@ const AdminHeader = () => {
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   const theme = useTheme();
 
-  console.log(theme.palette.mode);
+
   const neutralLight = theme.palette.neutral.light;
   const dark = theme.palette.neutral.dark;
   const background = theme.palette.background.default;

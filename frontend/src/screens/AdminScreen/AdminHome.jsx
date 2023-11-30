@@ -106,7 +106,7 @@ export default function MiniDrawer() {
   const { adminInfo } = useSelector((state) => state.adminAuth);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
-  console.log(theme.palette.mode);
+
   const neutralLight = theme.palette.neutral.light;
   const dark = theme.palette.neutral.dark;
   const background = theme.palette.background.default;

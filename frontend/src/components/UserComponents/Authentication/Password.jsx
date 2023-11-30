@@ -13,7 +13,7 @@ import { setCredentials } from "../../../slices/AuthSlice";
 const Password = () => {
   const { users } = useSelector((state) => state.users);
 
-  console.log(users, "<==users");
+ 
 
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
@@ -27,8 +27,7 @@ const Password = () => {
     validateOnChange: false,
     onSubmit: async (values) => {
       try {
-        console.log(users.userName, "<==username", values.password);
-        console.log(users, "<== users");
+  
         let userName = users.userName;
         let password = values.password;
         const res = await login({ userName, password }).unwrap();

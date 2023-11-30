@@ -42,7 +42,7 @@ const AdminReports = () => {
   };
 
   useEffect(() => {
-    console.log(filters, "checking filters");
+   
     fetchReports();
   }, [pagination, filters]);
 

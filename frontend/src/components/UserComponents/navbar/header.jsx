@@ -66,18 +66,15 @@ const Navbar = ({ socket }) => {
 
   useEffect(() => {
     socket?.current?.on("getNotification", (data) => {
-      console.log(data, "getNotification useEffect data");
+     
       dispatch(setNotification({ notification: data }));
     });
   }, [socket, dispatch]);
 
-  console.log(
-    notifications,
-    "this is the notification navbar===================================="
-  );
+ 
 
   const handleNotificationClick = (notificationId) => {
-    console.log("inside the impossible place", notificationId);
+
     dispatch(setNotificationRead({ notificationId }));
     setTimeout(() => {
       dispatch(removeNotification({ notificationId }));
@@ -85,7 +82,7 @@ const Navbar = ({ socket }) => {
   };
 
   const handleViewAllClick = () => {
-    console.log("mark all notifications as read");
+
     dispatch(setAllNotificationsRead());
     setTimeout(() => {
       dispatch(removeAllNotifications());
@@ -103,7 +100,7 @@ const Navbar = ({ socket }) => {
       } else {
         action = "shared";
       }
-      console.log(read);
+  
       const messageClass = read ? "read-notification" : "unread-notification";
 
       return {
@@ -129,7 +126,7 @@ const Navbar = ({ socket }) => {
   // console.log(data, "this si the data");
 
   const handleLogout = async () => {
-    console.log("logging out");
+   
     await logout();
     dispatch(clearCredentials());
     navigate("/username");

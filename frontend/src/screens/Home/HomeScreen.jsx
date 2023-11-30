@@ -43,7 +43,7 @@ const HomeScreen = () => {
 
   // console.log("After initializing socket", socketRef.current);
   useEffect(() => {
-    socket.current = io("http://localhost:8800");
+    socket.current = io("http://localhost:3000");
     socket.current.emit("new-user-add", userInfo._id);
   }, [userInfo._id]);
 

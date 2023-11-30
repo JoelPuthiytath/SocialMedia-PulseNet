@@ -39,12 +39,12 @@ const Register = () => {
     validationSchema,
     onSubmit: async (values) => {
       values = await Object.assign(values, { profilePic: file || "" });
-      console.log(values);
+     
       try {
         const res = await register({
           values,
         }).unwrap();
-        console.log(res, "<=== res");
+  
         dispatch(setUsers(res));
         navigate("/login-profile");
         toast("Check your emil...");

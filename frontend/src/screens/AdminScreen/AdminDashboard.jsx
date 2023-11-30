@@ -59,9 +59,9 @@ const AdminDashboard = () => {
   // };
 
   const handleBlockUser = async (userId) => {
-    console.log(userId, "userId");
+
     const data = await patchBlock({ userId }).unwrap();
-    console.log(data, "this is the data inside handleblock.");
+   
     if (data.success) {
       dispatch(getUsers(data.user));
       const updatedUsers = allUsers.map((user) =>
@@ -73,8 +73,8 @@ const AdminDashboard = () => {
   };
 
   const filteredData = (data, userData) => {
-    console.log(data, "<==data");
-    console.log(userData, "<== userData");
+
+  
     return userData.filter((item) =>
       item?.userName?.toLowerCase()?.includes(data.toLowerCase())
     );

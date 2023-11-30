@@ -34,7 +34,7 @@ const Recovery = () => {
           text,
           subject: "Password Recovery OTP",
         }).then((result) => {
-          console.log(result);
+       
           if (result?.data?.success) {
             return toast.success("OTP has been sent to your email!");
           }
@@ -50,7 +50,7 @@ const Recovery = () => {
 
   useEffect(() => {
     if (!hasEffectRun.current) {
-      console.log("checking");
+     
       otpsender();
     }
 
@@ -63,7 +63,7 @@ const Recovery = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    console.log(userName, OTP);
+  
     let code = OTP;
     try {
       const data = {
@@ -71,7 +71,7 @@ const Recovery = () => {
         code,
       };
       const res = await otpVerify(data);
-      console.log(res.data);
+     
       if (res?.data?.success) {
         toast.success("Verify Successfully!");
         return navigate("/reset");

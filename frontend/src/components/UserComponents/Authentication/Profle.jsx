@@ -38,24 +38,24 @@ const Profile = () => {
   const hasEffectRun = useRef(false);
 
   useEffect(() => {
-    console.log("haii");
+   
     if (!hasEffectRun.current) {
-      console.log(users, "<==users");
+  
       (async () => {
         try {
           if (users?.isVerified) {
-            console.log(users.isVerified, "<===users");
+           
           } else {
-            console.log(users?.isVerified, "checking weather verified or not");
-            console.log(emailToken, "<emailtoken");
+           
+        
             const res = await emailVerify({ emailToken });
-            console.log({ ...res?.data?.user }, "<==1 register res");
-            console.log(res?.data?.token, "<==2 register res");
-            console.log(res?.data, "<==3 register res");
-            console.log(res, "<==4 register res");
+           
+           
+        
+         
 
             if (res?.data?.user?.isVerified) {
-              console.log("before adding to creditiental");
+             
               toast.success("Email verified successfully...");
               dispatch(
                 setCredentials({
@@ -64,7 +64,7 @@ const Profile = () => {
                 })
               );
               dispatch(setUsers(res.data.user));
-              console.log("cherk in profile useEffect");
+            
             }
             console.log(res.error?.status);
           }
@@ -89,10 +89,10 @@ const Profile = () => {
 
     onSubmit: async (values) => {
       try {
-        console.log("inside profile submit function");
+      
         values = await Object.assign(values, { profilePic: file || "" });
         const res = await updateUser(values).unwrap();
-        console.log(res, "< onsubmit res in profile");
+       
 
         dispatch(setCredentials({ userInfo: { ...res } }));
         navigate("/");
@@ -106,7 +106,7 @@ const Profile = () => {
 
   const onUpload = async (e) => {
     const base64 = await convertToBase64(e.target.files[0], 400);
-    console.log(base64, "base^3");
+    
     setFile(base64);
   };
 

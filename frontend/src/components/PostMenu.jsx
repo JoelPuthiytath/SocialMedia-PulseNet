@@ -20,7 +20,7 @@ import { toast } from "react-toastify";
 const ITEM_HEIGHT = 38;
 
 export default function LongMenu({ postId, friendId }) {
-  console.log(postId, "postId");
+
 
   const options = ["Unfollow", `${postId ? "Report" : "Cancel"}`];
 
@@ -48,7 +48,7 @@ export default function LongMenu({ postId, friendId }) {
     dispatch(
       setFriends({ following: data.following, followers: data.followers })
     );
-    console.log("removeFriend");
+ 
     handleClose();
   };
 
@@ -65,9 +65,9 @@ export default function LongMenu({ postId, friendId }) {
     // Handle the report submission here (send the report reason to the server or perform any other action)
     // You can use the reportReason state for this purpose
     try {
-      console.log("Report reason:", reportReason);
+     
       const data = await reportPost({ postId, reportReason }).unwrap();
-      console.log(data, "reportData");
+     
       toast(data.message);
     } catch (error) {
       toast(error);

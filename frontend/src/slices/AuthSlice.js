@@ -46,7 +46,7 @@ const AuthSlice = createSlice({
     // },
 
     setNotification: (state, action) => {
-      console.log("setnotifacion......");
+   
       const newNotification = {
         ...action.payload.notification,
         read: false,

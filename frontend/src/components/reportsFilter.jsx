@@ -7,7 +7,7 @@ const ReportsFilters = ({ onFilterChange }) => {
   const [postId, setPostId] = useState("");
 
   const handleApplyFilters = () => {
-    console.log(postId, "this is teh postId form filter");
+   
     onFilterChange({ reporterId, postId });
   };
 

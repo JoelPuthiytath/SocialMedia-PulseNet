@@ -29,7 +29,7 @@ const Conversation = ({ data, currentUser, online }) => {
       try {
         const data = await getUserById({ userId }).unwrap();
         setUserData(data);
-        console.log(data, "data");
+       
       } catch (error) {
         console.log(error);
       }

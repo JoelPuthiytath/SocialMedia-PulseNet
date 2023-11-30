@@ -20,6 +20,7 @@ const storage = multer.diskStorage({
     return cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
+
 const upload = multer({ storage });
 
 const uploadPost = (req, res) => {
@@ -227,12 +228,48 @@ const likePost = asyncHandler(async (req, res) => {
       { likes: post.likes },
       { new: true }
     );
-    res.status(200).json(updatedPost);
+
+    // Aggregate user information
+    const aggregatedPost = await Post.aggregate([
+      {
+        $match: { _id: updatedPost._id },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          location: 1,
+          description: 1,
+          picturePath: 1,
+          likes: 1,
+          comments: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.firstName": 1,
+          "userDetails.lastName": 1,
+          "userDetails.profilePic": 1,
+        },
+      },
+    ]);
+
+    res.status(200).json(aggregatedPost[0]);
   } catch (err) {
     console.log(err);
     res.status(404).json({ message: err.message });
   }
 });
+
 const addComment = asyncHandler(async (req, res) => {
   const { postId, comment, profilePic } = req.body;
   try {
@@ -245,7 +282,39 @@ const addComment = asyncHandler(async (req, res) => {
     const post = await Post.findById(postId);
     post.comments.push(comments);
     await post.save();
-    res.status(200).json(post);
+    const aggregatedPost = await Post.aggregate([
+      {
+        $match: { _id: post._id },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          location: 1,
+          description: 1,
+          picturePath: 1,
+          likes: 1,
+          comments: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.firstName": 1,
+          "userDetails.lastName": 1,
+          "userDetails.profilePic": 1,
+        },
+      },
+    ]);
+    res.status(200).json(aggregatedPost[0]);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "internal server error" });

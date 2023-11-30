@@ -60,7 +60,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const isBlocked = userInfo.blockedUsers.some(
     (blockedUser) => blockedUser === userId
   );
-  console.log(isBlocked);
+  // console.log(isBlocked);
   const string = isBlocked ? "Unblock" : "Block";
 
   const options = [string, "Report", "Cancel"];
@@ -107,14 +107,14 @@ const UserWidget = ({ userId, picturePath }) => {
       toast.warning("You are restricted to use this app");
     }
 
-    console.log(data, "<user In widgets");
+  
     setUser(data);
   };
 
   useEffect(() => {
     // if (!hasMounted.current) {
     getUserInfo();
-    console.log("haii");
+  
     //   hasMounted.current = true;
     // }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -135,11 +135,11 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleBlockUser = async () => {
     try {
-      console.log("user blocked");
+    
       const userIdToBlock = userId;
-      console.log(userIdToBlock, "check the user id");
+   
       const data = await blockUser({ userIdToBlock }).unwrap();
-      console.log(data, "cheking");
+    
       dispatch(setCredentials({ userInfo: { ...data } }));
     } catch (error) {
       toast(error);
@@ -151,9 +151,9 @@ const UserWidget = ({ userId, picturePath }) => {
     try {
       // const userIdToUnblock = id === undefined ? userId : id;
       const userIdToUnblock = userId;
-      console.log("user blocked", userIdToUnblock);
+     
       const data = await unblockUser({ userIdToUnblock }).unwrap();
-      console.log(data, "cheking........");
+    
       dispatch(setCredentials({ userInfo: { ...data } }));
     } catch (error) {
       console.log(error);
@@ -167,7 +167,7 @@ const UserWidget = ({ userId, picturePath }) => {
     setClickFetchblockedUsers(true);
     setAnchorEl(null);
     const data = await fetchBlocedUsers().unwrap();
-    console.log(data, "data");
+
     setBlockedUsers(data);
   };
 
@@ -175,8 +175,8 @@ const UserWidget = ({ userId, picturePath }) => {
     e.preventDefault();
     const senderId = userInfo._id;
     const receiverId = userId;
-    console.log(senderId, "senderId");
-    console.log(receiverId, "receiverId");
+   
+   
     try {
       await createChat({ senderId, receiverId }).unwrap();
 
@@ -207,13 +207,13 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleReportUser = async () => {
     try {
-      console.log("Report reason:", reportReason);
+  
 
       const data = await reportUser({
         reportedUserId: userId,
         reportReason,
       }).unwrap();
-      console.log(data, "reportData");
+    
       toast(data.message);
     } catch (error) {
       toast(error);
@@ -230,9 +230,9 @@ const UserWidget = ({ userId, picturePath }) => {
   };
 
   const handleSaveLinkedinLink = async () => {
-    console.log("inside save social profile.");
+  
     const user = await addSocialProfile({ profileLink }).unwrap();
-    console.log(user, "after fetching");
+  
     dispatch(setCredentials({ userInfo: { ...user } }));
     setIsEditingLinkedin(false);
   };

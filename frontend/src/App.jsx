@@ -20,7 +20,7 @@ import AdminHeader from "./components/AdminComponents/AdminHeader";
 const App = () => {
   const { mode } = useSelector((state) => state.authUser);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
-  // console.log(theme, "<== theme");
+  
   return (
     <>
       <ToastContainer />

@@ -42,7 +42,7 @@ const FriendListWidget = ({ userId }) => {
   useEffect(() => {
     (async () => {
       const data = await getFriends({ userId }).unwrap();
-      console.log(data, "this is the data i am looking for");
+    
       dispatch(
         setFriends({ followers: data.followers, following: data.following })
       );
@@ -50,7 +50,7 @@ const FriendListWidget = ({ userId }) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const performSearch = async () => {
     const res = await searchUser({ searchTerm }).unwrap();
-    console.log(res, "< this is what ia m cheking");
+   
     setSearchResults(res);
   };
 

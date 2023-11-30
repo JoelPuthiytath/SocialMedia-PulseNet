@@ -30,9 +30,9 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.authUser);
   const { _id: userId } = userInfo;
-  // console.log(userId, "<- checking userId");
+ 
   const { following } = userInfo;
-  // console.log(friends, "<== friends in friend component");
+
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -46,14 +46,14 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const [getFeedPost] = useGetFeedPostMutation();
 
   const [addFriend] = useAddFriendMutation();
-  // console.log(`userId : ${userId} frinedId : ${friendId}`);
+
 
   const isFriend =
     userId !== friendId
       ? following.find((friend) => friend._id === friendId)
       : null;
 
-  // console.log(isFriend, "<== checking isFirend ");
+
 
   const patchFriend = async () => {
     try {
@@ -61,7 +61,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
       dispatch(
         setFriends({ followers: data.followers, following: data.following })
       );
-      console.log(data, "for checking the data"); // Fixed typo here
+
     } catch (error) {
       console.log(error.data.message, "checking add friend error");
       toast.error(error.data.message);
@@ -79,7 +79,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
     await deletePost({ postId }).unwrap();
     const data = await getFeedPost().unwrap();
     dispatch(setPosts({ posts: data }));
-    console.log("postDelete");
+   
     handleClose(); // Close the menu after deleting the post
   };
 

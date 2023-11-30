@@ -106,8 +106,6 @@ const Message = ({
 
   const handleChange = async (newMessage) => {
     try {
-      console.log(newMessage);
-
       setNewMessage(newMessage);
 
       if (!typing) {
@@ -151,7 +149,6 @@ const Message = ({
       try {
         const data = await getUserById({ userId }).unwrap();
         setUserData(data);
-        console.log(data, " chatData");
       } catch (error) {
         console.log(error);
         toast.warning(error.data.message);
@@ -163,10 +160,9 @@ const Message = ({
   const fetchMessges = async () => {
     try {
       const chatId = chat._id;
-      console.log(chatId, "chatId");
+
       const data = await getMessages({ chatId }).unwrap();
       setMessages(data);
-      console.log(data, "messages");
     } catch (error) {
       console.log(error);
     }
@@ -195,7 +191,6 @@ const Message = ({
         const data = await addMessage(message).unwrap();
         setMessages([...messages, data]);
         setNewMessage("");
-        console.log(data, "addMessage");
       } catch (error) {
         console.log(error);
       }
@@ -212,7 +207,6 @@ const Message = ({
   }, []);
 
   useEffect(() => {
-    console.log("Message Arrived: ", receiveMessage);
     if (receiveMessage !== null && receiveMessage.chatId === chat._id) {
       setMessages([...messages, receiveMessage]);
     }
@@ -235,8 +229,6 @@ const Message = ({
     });
 
     socket.current?.on("callUser", (data) => {
-      console.log(data, "this is the data you're looking for");
-      console.log("just checking");
       setVideoCall(true);
       setIsIncomingCall(true);
       setCaller(data.from);
@@ -244,7 +236,6 @@ const Message = ({
     });
 
     socket.current?.on("callAccepted", (signal) => {
-      console.log("Call accepted signal received:", signal);
       connectionRef.current.signal(signal);
       setCallAccepted(true);
     });
@@ -263,7 +254,6 @@ const Message = ({
     });
 
     peer.on("signal", (data) => {
-      console.log("Answering call - Signal data:", data);
       socket.current.emit("answerCall", {
         signal: data,
         to: caller, // Send the signal to the caller
@@ -271,7 +261,6 @@ const Message = ({
     });
 
     peer.on("stream", (remoteStream) => {
-      console.log("Received remote stream:", remoteStream);
       userVideo.current.srcObject = remoteStream;
     });
 
@@ -283,8 +272,6 @@ const Message = ({
   };
 
   const callUser = () => {
-    console.log("Calling user");
-
     if (!stream) {
       console.error("No stream available");
       return;
@@ -296,15 +283,7 @@ const Message = ({
     });
 
     const sendSignal = () => {
-      console.log(
-        "inside sendSignal",
-        currentUser,
-        receiverId,
-        userData.userName
-      );
       peer.on("signal", (data) => {
-        console.log("Peer signal:", data);
-
         socket.current.emit("callUser", {
           userToCall: receiverId,
           signalData: data,
@@ -315,12 +294,10 @@ const Message = ({
     };
 
     peer.on("open", (id) => {
-      console.log("Peer connection opened with ID:", id);
       sendSignal();
     });
 
     peer.on("stream", (remoteStream) => {
-      console.log("Received remote stream:", remoteStream);
       userVideo.current.srcObject = remoteStream;
     });
 
@@ -329,7 +306,6 @@ const Message = ({
     });
 
     peer.on("close", () => {
-      console.log("Peer connection closed");
       // Handle cleanup and UI updates when the call ends
       setCallEnded(true);
       setIsModalOpen(false);
@@ -337,7 +313,6 @@ const Message = ({
     });
 
     socket.current.on("callAccepted", (signal) => {
-      console.log("Call accepted signal received:", signal);
       peer.signal(signal); // Signal the peer to complete the connection
       setCallAccepted(true);
     });
@@ -367,19 +342,15 @@ const Message = ({
 
   const handleActionClick = async (actionName, messageId) => {
     if (actionName === "Unsend") {
-      console.log(`Delete action clicked for message with ID: ${messageId}`);
       try {
         const data = await deleteMessage({
           messageId,
           chatId: chat._id,
         }).unwrap();
-        console.log(data, "this is the data");
 
         if (data.success) {
           setMessages(data.message);
         }
-        console.log(data.message, "message");
-        console.log(data.success, "chaeking weather it is true or not");
       } catch (error) {
         console.log(error);
       }
@@ -393,7 +364,6 @@ const Message = ({
     setVideoCall(false);
     connectionRef.current.destroy();
   };
-  console.log(isIncomingCall, "incoming call");
   return (
     <>
       {userData && chat ? (

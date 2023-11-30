@@ -23,9 +23,9 @@ const AdminLogin = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log(email, password);
+  
       const data = await AdminLogin({ email, password }).unwrap();
-      console.log(data, "data");
+    
       dispatch(adminSetCredentials(data));
       navigate("admin/home");
     } catch (error) {

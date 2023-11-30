@@ -35,14 +35,14 @@ const Videocall = () => {
 
   const receiverId = chat?.members?.find((id) => id !== currentUser);
   useEffect(() => {
-    socket.current = io("http://localhost:8800");
+    socket.current = io("http://localhost:3000");
     socket.current.emit("new-user-add", userInfo._id);
 
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setStream(stream);
-        console.log(stream, "stream");
+       
 
         // Check if myVideo.current is defined before setting srcObject
         if (myVideo.current) {
@@ -58,21 +58,17 @@ const Videocall = () => {
     });
 
     socket.current.on("callUser", (data) => {
-      console.log(data, "this is the data you're looking for");
-      console.log("just checking");
+  
       setReceivingCall(true);
       setCaller(data.from);
       setCallerSignal(data.signal);
     });
   }, []);
 
-  console.log(me, "this si me");
-  console.log(receiverId, "receverId");
-  console.log(receivingCall, "cheking receving call");
-  console.log(caller, "this is the caller");
+
 
   const callUser = () => {
-    console.log("inside call user");
+ 
     const peer = new Peer({
       initiator: true,
       stream: stream,
