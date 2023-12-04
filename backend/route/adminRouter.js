@@ -10,8 +10,10 @@ import {
   getUser,
   getPostReports,
   blockAndUnblockUser,
-  blockAndUnblockPost
+  blockAndUnblockPost,
+  deletePost,
 } from "../controller/adminController.js";
+import { postById } from "../controller/postController.js";
 const router = express.Router();
 
 router.post("/login", adminLogin);
@@ -26,6 +28,8 @@ router
 router.route("/edit").get(adminProtect, getUser).put(adminProtect, editUser);
 router.get("/postReports", adminProtect, getPostReports);
 router.get("/patchBlock", adminProtect, blockAndUnblockUser);
-router.get("postBlock",adminProtect,blockAndUnblockPost)
+router.get("/postBlock", adminProtect, blockAndUnblockPost);
+router.get("/posts/:postId", adminProtect, postById);
+router.delete("/postDelete", adminProtect, deletePost);
 
 export default router;

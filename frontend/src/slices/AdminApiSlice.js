@@ -24,6 +24,12 @@ export const AdminApiSlice = apiSlice.injectEndpoints({
         params: data,
       }),
     }),
+    adminGetPost: builder.mutation({
+      query: (data) => ({
+        url: `${ADMIN_URL}/posts/${data.postId}`,
+        method: "GET",
+      }),
+    }),
     patchBlock: builder.mutation({
       query: (userId) => ({
         url: `${ADMIN_URL}/patchBlock`,
@@ -31,7 +37,20 @@ export const AdminApiSlice = apiSlice.injectEndpoints({
         params: userId,
       }),
     }),
-
+    postBlock: builder.mutation({
+      query: (postId) => ({
+        url: `${ADMIN_URL}/postBlock`,
+        method: "GET",
+        params: postId,
+      }),
+    }),
+    postDelete: builder.mutation({
+      query: (postId) => ({
+        url: `${ADMIN_URL}/postDelete`,
+        method: "DELETE",
+        params: postId,
+      }),
+    }),
     CreateUser: builder.mutation({
       query: (data) => ({
         url: `${ADMIN_URL}/users`,
@@ -80,4 +99,7 @@ export const {
   usePostReportsMutation,
   useEditUserMutation,
   useUpdateUserMutation,
+  usePostBlockMutation,
+  usePostDeleteMutation,
+  useAdminGetPostMutation,
 } = AdminApiSlice;

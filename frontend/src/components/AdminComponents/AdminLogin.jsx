@@ -23,11 +23,10 @@ const AdminLogin = () => {
 
   const handleSubmit = async () => {
     try {
-  
       const data = await AdminLogin({ email, password }).unwrap();
-    
+
       dispatch(adminSetCredentials(data));
-      navigate("admin/home");
+      navigate("/admin/home");
     } catch (error) {
       console.log(error);
     }

@@ -30,9 +30,8 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.authUser);
   const { _id: userId } = userInfo;
- 
-  const { following } = userInfo;
 
+  const { following } = userInfo;
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -47,13 +46,10 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
 
   const [addFriend] = useAddFriendMutation();
 
-
   const isFriend =
     userId !== friendId
       ? following.find((friend) => friend._id === friendId)
       : null;
-
-
 
   const patchFriend = async () => {
     try {
@@ -61,7 +57,6 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
       dispatch(
         setFriends({ followers: data.followers, following: data.following })
       );
-
     } catch (error) {
       console.log(error.data.message, "checking add friend error");
       toast.error(error.data.message);
@@ -79,7 +74,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
     await deletePost({ postId }).unwrap();
     const data = await getFeedPost().unwrap();
     dispatch(setPosts({ posts: data }));
-   
+
     handleClose(); // Close the menu after deleting the post
   };
 
@@ -116,12 +111,24 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
         <>
           {isFriend ? (
             // <PersonRemoveOutlined sx={{ color: primaryDark }} />
-            <PostMenu postId={postId} friendId={friendId} />
+            <PostMenu postId={postId} friendId={friendId} isFriend={true} />
           ) : (
-            <IconButton onClick={patchFriend}>
-              {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
-              <span className="btn btn-sm btn-primary"> Follow</span>
-            </IconButton>
+            <>
+              <div className="d-flex align-items-center">
+                <IconButton onClick={patchFriend}>
+                  {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
+                  <span className="btn btn-sm btn-outline-primary">
+                    {" "}
+                    Follow
+                  </span>
+                </IconButton>
+                <PostMenu
+                  postId={postId}
+                  friendId={friendId}
+                  isFriend={false}
+                />
+              </div>
+            </>
           )}
         </>
       )}

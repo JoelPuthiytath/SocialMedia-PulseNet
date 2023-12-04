@@ -1,6 +1,6 @@
 import express from "express";
 
-import { protect } from "../middleware/authMiddleware.js";
+import { adminProtect, protect } from "../middleware/authMiddleware.js";
 import {
   addComment,
   getFeedPosts,

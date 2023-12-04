@@ -26,12 +26,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  useAddFriendMutation,
   useAddSocialProfileMutation,
   useBlockUserMutation,
   useFetchBlockedUsersMutation,
   useGetUserByIdMutation,
   useGetUserMutation,
   useLogoutMutation,
+  useRemoveFriendMutation,
   useReportUserMutation,
   useUnblockUserMutation,
 } from "../../slices/UsersApiSlice";
@@ -49,7 +51,11 @@ import { toast } from "react-toastify";
 
 import linkedinIcon from "../../assets/img/linkedin.png";
 import { useCreateChatMutation } from "../../slices/chatApiSlice";
-import { clearCredentials, setCredentials } from "../../slices/AuthSlice";
+import {
+  clearCredentials,
+  setCredentials,
+  setFriends,
+} from "../../slices/AuthSlice";
 import { useRef } from "react";
 
 const ITEM_HEIGHT = 38;
@@ -60,10 +66,13 @@ const UserWidget = ({ userId, picturePath }) => {
   const isBlocked = userInfo.blockedUsers.some(
     (blockedUser) => blockedUser === userId
   );
-  // console.log(isBlocked);
-  const string = isBlocked ? "Unblock" : "Block";
+  const isFriend = userInfo.following.some((frined) => frined._id === userId);
+  // console.log(isFriend, "is friend");
 
-  const options = [string, "Report", "Cancel"];
+  // console.log(isBlocked);
+  const string = isFriend ? "Unfollow" : "Follow";
+  const string2 = isBlocked ? "Unblock" : "Block";
+  const options = [string, string2, "Report", "Cancel"];
   const options2 = ["Edit Profile", "Blocked Users", "Cancel"];
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -72,7 +81,6 @@ const UserWidget = ({ userId, picturePath }) => {
   // State for the reporting dialog
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
-
   const [isEditingTwitter, setIsEditingTwitter] = useState(false);
   const [twitterProfileLink, setTwitterProfileLink] = useState("");
   const [isEditingLinkedin, setIsEditingLinkedin] = useState(false);
@@ -94,6 +102,8 @@ const UserWidget = ({ userId, picturePath }) => {
   const [logout] = useLogoutMutation();
   const [addSocialProfile] = useAddSocialProfileMutation();
   const [fetchBlocedUsers] = useFetchBlockedUsersMutation();
+  const [addFriend] = useAddFriendMutation();
+  const [removeFriend] = useRemoveFriendMutation();
   const hasMounted = useRef(false);
 
   const dispatch = useDispatch();
@@ -107,14 +117,13 @@ const UserWidget = ({ userId, picturePath }) => {
       toast.warning("You are restricted to use this app");
     }
 
-  
     setUser(data);
   };
 
   useEffect(() => {
     // if (!hasMounted.current) {
     getUserInfo();
-  
+
     //   hasMounted.current = true;
     // }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -135,11 +144,10 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleBlockUser = async () => {
     try {
-    
       const userIdToBlock = userId;
-   
+
       const data = await blockUser({ userIdToBlock }).unwrap();
-    
+
       dispatch(setCredentials({ userInfo: { ...data } }));
     } catch (error) {
       toast(error);
@@ -151,9 +159,9 @@ const UserWidget = ({ userId, picturePath }) => {
     try {
       // const userIdToUnblock = id === undefined ? userId : id;
       const userIdToUnblock = userId;
-     
+
       const data = await unblockUser({ userIdToUnblock }).unwrap();
-    
+
       dispatch(setCredentials({ userInfo: { ...data } }));
     } catch (error) {
       console.log(error);
@@ -175,8 +183,7 @@ const UserWidget = ({ userId, picturePath }) => {
     e.preventDefault();
     const senderId = userInfo._id;
     const receiverId = userId;
-   
-   
+
     try {
       await createChat({ senderId, receiverId }).unwrap();
 
@@ -207,13 +214,11 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleReportUser = async () => {
     try {
-  
-
       const data = await reportUser({
         reportedUserId: userId,
         reportReason,
       }).unwrap();
-    
+
       toast(data.message);
     } catch (error) {
       toast(error);
@@ -230,9 +235,8 @@ const UserWidget = ({ userId, picturePath }) => {
   };
 
   const handleSaveLinkedinLink = async () => {
-  
     const user = await addSocialProfile({ profileLink }).unwrap();
-  
+
     dispatch(setCredentials({ userInfo: { ...user } }));
     setIsEditingLinkedin(false);
   };
@@ -240,6 +244,31 @@ const UserWidget = ({ userId, picturePath }) => {
   const handleLinkedinLinkClick = () => {
     // navigate(profileLink);
     window.open(user.socialProfile);
+  };
+
+  const handleFollow = async () => {
+    try {
+      const friendId = userId;
+      console.log("haiiii");
+      const data = await addFriend({ friendId }).unwrap();
+      dispatch(
+        setFriends({ followers: data.followers, following: data.following })
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  // console.log(userInfo, "userInfo");
+  const handleUnfollow = async () => {
+    try {
+      const friendId = userId;
+      const data = await removeFriend({ friendId }).unwrap();
+      dispatch(
+        setFriends({ following: data.following, followers: data.followers })
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -314,7 +343,11 @@ const UserWidget = ({ userId, picturePath }) => {
                       <MenuItem
                         key={option}
                         onClick={
-                          option === "Block"
+                          option === "Follow"
+                            ? handleFollow
+                            : option === "Unfollow"
+                            ? handleUnfollow
+                            : option === "Block"
                             ? handleBlockUser
                             : option === "Unblock"
                             ? handleUnBlock

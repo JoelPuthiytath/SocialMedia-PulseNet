@@ -11,6 +11,7 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  Alert,
 } from "@mui/material";
 import Modal from "react-modal";
 import InputEmoji from "react-input-emoji";
@@ -60,7 +61,6 @@ const PosViewModal = ({
   const [createChat] = useCreateChatMutation();
   const [addMessage] = useAddMessagesMutation();
 
-
   //   const postUserId = postData.userId;
 
   //   const navigate = useNavigate();
@@ -91,7 +91,9 @@ const PosViewModal = ({
   };
 
   const openShareModal = () => {
-    setShareModalOpen(true);
+    if (userInfo !== null) {
+      setShareModalOpen(true);
+    }
 
     // console.log("share model is opend", isShareModalOpen);
   };
@@ -138,8 +140,6 @@ const PosViewModal = ({
         } catch (error) {
           console.log(error);
         }
-
-     
       });
     } else {
       // Handle the case where no user is selected
@@ -245,55 +245,69 @@ const PosViewModal = ({
           <Typography variant="h3" className="my-3">
             Share
           </Typography>
-          {userInfo.friends.map((friend) => (
-            <div
-              key={friend._id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-              className="my-2"
-            >
-              <input
-                className="mx-3"
-                type="checkbox"
-                value={friend._id}
-                id={friend._id}
-                checked={selectedUsers.includes(friend._id)}
-                onChange={() => handleUserCheckboxChange(friend._id)}
-              />
-              <label htmlFor={friend._id}>
-                <UserImage image={friend.profilePic} size="40px" />
-                <Box
-                  marginLeft={3}
-                  // onClick={(e) => {
-                  //   e.preventDefault();
-                  //   openChat(friend._id);
-                  // }}
+          {userInfo.followers.length < 1 ? (
+            <>
+              <Alert icon={false} severity="warning">
+                Your following list is empty!
+              </Alert>
+              <p style={{ fontSize: "small", marginTop: "1.5rem" }}>
+                <small>You can only share posts with your followers.</small>
+              </p>
+              <button
+                className="my-3 float-right btn btn-primary"
+                onClick={closeShareModal}
+              >
+                Close
+              </button>
+            </>
+          ) : (
+            <>
+              {userInfo.followers.map((friend) => (
+                <div
+                  key={friend._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  className="my-2"
                 >
-                  <Typography
-                    color={main}
-                    variant="h5"
-                    fontWeight="500"
-                    sx={{
-                      "&:hover": {
-                        color: palette.primary.light,
-                        cursor: "pointer",
-                      },
-                    }}
-                  >
-                    {friend.userName}
-                  </Typography>
-                </Box>
-              </label>
-            </div>
-          ))}
-          <button className=" my-3" onClick={closeShareModal}>
-            Close
-          </button>
-          <button className="my-3 ms-5 ps-4" onClick={sharePost}>
-            Send
-          </button>
+                  <input
+                    className="mx-3"
+                    type="checkbox"
+                    value={friend._id}
+                    id={friend._id}
+                    checked={selectedUsers.includes(friend._id)}
+                    onChange={() => handleUserCheckboxChange(friend._id)}
+                  />
+                  <label htmlFor={friend._id}>
+                    <Box display={"flex"} alignItems={"center"}>
+                      <UserImage image={friend.profilePic} size="40px" />
+                      <Typography
+                        className="ms-2"
+                        color={main}
+                        variant="h5"
+                        fontWeight="500"
+                        sx={{
+                          "&:hover": {
+                            color: palette.primary.light,
+                            cursor: "pointer",
+                          },
+                        }}
+                      >
+                        {friend.userName}
+                      </Typography>
+                    </Box>
+                  </label>
+                </div>
+              ))}
+              <button className="my-3" onClick={closeShareModal}>
+                Close
+              </button>
+              <button className="my-3 ms-5 ps-4" onClick={sharePost}>
+                Send
+              </button>
+            </>
+          )}
         </div>
       </Modal>
       {isComments && (

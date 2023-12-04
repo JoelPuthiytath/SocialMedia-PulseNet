@@ -7,6 +7,7 @@ import Post from "../models/postModel.js";
 import PostReport from "../models/postReports.js";
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,9 @@ const uploadPost = (req, res) => {
       console.log(req.body?.location, "this is the location");
       const userId = req.user._id;
       console.log(userId, "this is the userId");
+      const postId = `POS[${uuidv4()}]`;
       const newPost = new Post({
+        _id: postId,
         userId: userId,
         location: location,
         description,
@@ -43,49 +46,6 @@ const uploadPost = (req, res) => {
         comments: [],
       });
       await newPost.save();
-
-      // const user = await User.findById(userId).populate("blockedUsers");
-      // const allBlockedUserIds = user.blockedUsers.map(
-      //   (blockedUser) => blockedUser._id
-      // );
-
-      // const posts = await Post.aggregate([
-      //   {
-      //     $match: {
-      //       userId: { $nin: allBlockedUserIds },
-      //     },
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: "users", // Assuming your User collection name is "users"
-      //       localField: "userId",
-      //       foreignField: "_id",
-      //       as: "userDetails",
-      //     },
-      //   },
-      //   {
-      //     $unwind: "$userDetails",
-      //   },
-      //   {
-      //     $project: {
-      //       _id: 1,
-      //       userId: 1,
-      //       location: 1,
-      //       description: 1,
-      //       picturePath: 1,
-      //       likes: 1,
-      //       comments: 1,
-      //       createdAt: 1,
-      //       updatedAt: 1,
-      //       "userDetails.firstName": 1,
-      //       "userDetails.lastName": 1,
-      //       "userDetails.profilePic": 1,
-      //     },
-      //   },
-      //   {
-      //     $sort: { createdAt: -1 },
-      //   },
-      // ]);
       res.status(201).json({ sucess: true });
     } catch (err) {
       res.status(409).json({ message: err.message });
@@ -390,11 +350,43 @@ const postById = asyncHandler(async (req, res) => {
   const { postId } = req.params;
   console.log(postId, "post id is this");
   try {
-    const post = await Post.findById(postId);
-    if (!post) {
+    const aggregatedPost = await Post.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(postId) },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          location: 1,
+          description: 1,
+          picturePath: 1,
+          likes: 1,
+          comments: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "userDetails.firstName": 1,
+          "userDetails.lastName": 1,
+          "userDetails.profilePic": 1,
+        },
+      },
+    ]);
+    console.log(aggregatedPost[0]);
+    if (!aggregatedPost[0]) {
       return res.status(404).json({ error: "Post not found" });
     }
-    res.status(200).json(post);
+    res.status(200).json(aggregatedPost[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

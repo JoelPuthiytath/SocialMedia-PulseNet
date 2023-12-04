@@ -8,6 +8,7 @@ import {
 } from "@mui/icons-material";
 import InputEmoji from "react-input-emoji";
 import {
+  Alert,
   Avatar,
   Box,
   Divider,
@@ -117,7 +118,7 @@ const PostWidget = ({
   const sharePost = async () => {
     if (selectedUsers.length > 0) {
       selectedUsers.forEach(async (userId) => {
-        const selectedFriend = userInfo.friends.find(
+        const selectedFriend = userInfo.followers.find(
           (friend) => friend._id === userId
         );
 
@@ -266,50 +267,69 @@ const PostWidget = ({
           <Typography variant="h3" className="my-3">
             Share
           </Typography>
-          {userInfo.following.map((friend) => (
-            <div
-              key={friend._id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-              className="my-2"
-            >
-              <input
-                className="mx-3"
-                type="checkbox"
-                value={friend._id}
-                id={friend._id}
-                checked={selectedUsers.includes(friend._id)}
-                onChange={() => handleUserCheckboxChange(friend._id)}
-              />
-              <label htmlFor={friend._id}>
-                <Box display={"flex"} alignItems={"center"}>
-                  <UserImage image={friend.profilePic} size="40px" />
-                  <Typography
-                    className="ms-2"
-                    color={main}
-                    variant="h5"
-                    fontWeight="500"
-                    sx={{
-                      "&:hover": {
-                        color: palette.primary.light,
-                        cursor: "pointer",
-                      },
-                    }}
-                  >
-                    {friend.userName}
-                  </Typography>
-                </Box>
-              </label>
-            </div>
-          ))}
-          <button className=" my-3" onClick={closeShareModal}>
-            Close
-          </button>
-          <button className="my-3 ms-5 ps-4" onClick={sharePost}>
-            Send
-          </button>
+          {userInfo.followers.length < 1 ? (
+            <>
+              <Alert icon={false} severity="warning">
+                Your following list is empty!
+              </Alert>
+              <p style={{ fontSize: "small", marginTop: "1.5rem" }}>
+                <small>You can only share posts with your followers.</small>
+              </p>
+              <button
+                className="my-3 float-right btn btn-primary"
+                onClick={closeShareModal}
+              >
+                Close
+              </button>
+            </>
+          ) : (
+            <>
+              {userInfo.followers.map((friend) => (
+                <div
+                  key={friend._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  className="my-2"
+                >
+                  <input
+                    className="mx-3"
+                    type="checkbox"
+                    value={friend._id}
+                    id={friend._id}
+                    checked={selectedUsers.includes(friend._id)}
+                    onChange={() => handleUserCheckboxChange(friend._id)}
+                  />
+                  <label htmlFor={friend._id}>
+                    <Box display={"flex"} alignItems={"center"}>
+                      <UserImage image={friend.profilePic} size="40px" />
+                      <Typography
+                        className="ms-2"
+                        color={main}
+                        variant="h5"
+                        fontWeight="500"
+                        sx={{
+                          "&:hover": {
+                            color: palette.primary.light,
+                            cursor: "pointer",
+                          },
+                        }}
+                      >
+                        {friend.userName}
+                      </Typography>
+                    </Box>
+                  </label>
+                </div>
+              ))}
+              <button className="my-3" onClick={closeShareModal}>
+                Close
+              </button>
+              <button className="my-3 ms-5 ps-4" onClick={sharePost}>
+                Send
+              </button>
+            </>
+          )}
         </div>
       </Modal>
       {isComments && (

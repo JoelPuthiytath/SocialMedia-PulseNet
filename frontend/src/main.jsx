@@ -82,6 +82,7 @@ const router = createBrowserRouter(
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="home" element={<AdminHome />} />
           <Route path="edit/:id" element={<AdminUserEdit />} />
+          <Route path="posts/:postId" element={<PostModal />} />
           {/* <Route path="create" element={<AdminCreateUser />} /> */}
         </Route>
       </Route>

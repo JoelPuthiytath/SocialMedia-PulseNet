@@ -167,7 +167,7 @@ const editUser = asyncHandler(async (req, res) => {
 
 const getPostReports = asyncHandler(async (req, res) => {
   try {
-    const { page = 1, pageSize = 10, reporterId, postId } = req.query;
+    const { page = 1, pageSize = 4, reporterId, postId } = req.query;
     console.log(req.query);
 
     // Define a query object based on filters
@@ -182,11 +182,11 @@ const getPostReports = asyncHandler(async (req, res) => {
 
     // Fetch paginated and filtered reports
     const reports = await PostReport.find(query)
+      .sort({ timestamp: -1 })
       .skip((page - 1) * pageSize)
       .limit(parseInt(pageSize));
-    console.log(reports, "reports");
-
-    res.status(200).json(reports);
+    const totalReports = await PostReport.countDocuments(query);
+    res.status(200).json({ reports, totalReports });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -232,6 +232,21 @@ const blockAndUnblockPost = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+const deletePost = asyncHandler(async (req, res) => {
+  const { postId } = req.query;
+  console.log(req.query, req.params, req.body);
+  console.log(postId, "postId");
+  try {
+    const post = await Post.findByIdAndDelete(postId);
+    await PostReport.deleteMany({ postId });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export {
   adminLogin,
   logoutAdmin,
@@ -243,4 +258,5 @@ export {
   getUser,
   editUser,
   getPostReports,
+  deletePost,
 };

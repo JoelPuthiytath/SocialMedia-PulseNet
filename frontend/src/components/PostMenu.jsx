@@ -19,10 +19,11 @@ import { toast } from "react-toastify";
 
 const ITEM_HEIGHT = 38;
 
-export default function LongMenu({ postId, friendId }) {
-
-
-  const options = ["Unfollow", `${postId ? "Report" : "Cancel"}`];
+export default function LongMenu({ postId, friendId, isFriend }) {
+  // const options = [isfriend ? "Unfollow","Repoort","Cancel" : `${postId ? "Report" : "Cancel"}`];
+  const options = isFriend
+    ? ["Unfollow", postId ? "Report" : "Cancel"]
+    : [postId ? "Report" : "Cancel"];
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -48,7 +49,7 @@ export default function LongMenu({ postId, friendId }) {
     dispatch(
       setFriends({ following: data.following, followers: data.followers })
     );
- 
+
     handleClose();
   };
 
@@ -65,12 +66,11 @@ export default function LongMenu({ postId, friendId }) {
     // Handle the report submission here (send the report reason to the server or perform any other action)
     // You can use the reportReason state for this purpose
     try {
-     
       const data = await reportPost({ postId, reportReason }).unwrap();
-     
-      toast(data.message);
+
+      toast.success(data.message);
     } catch (error) {
-      toast(error);
+      toast.error(error);
     }
     setReportDialogOpen(false);
   };
