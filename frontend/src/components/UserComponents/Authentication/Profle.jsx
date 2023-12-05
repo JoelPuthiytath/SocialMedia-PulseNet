@@ -38,24 +38,14 @@ const Profile = () => {
   const hasEffectRun = useRef(false);
 
   useEffect(() => {
-   
     if (!hasEffectRun.current) {
-  
       (async () => {
         try {
           if (users?.isVerified) {
-           
           } else {
-           
-        
             const res = await emailVerify({ emailToken });
-           
-           
-        
-         
 
             if (res?.data?.user?.isVerified) {
-             
               toast.success("Email verified successfully...");
               dispatch(
                 setCredentials({
@@ -64,7 +54,6 @@ const Profile = () => {
                 })
               );
               dispatch(setUsers(res.data.user));
-            
             }
             console.log(res.error?.status);
           }
@@ -82,17 +71,17 @@ const Profile = () => {
       lastName: userInfo?.lastName || users?.lastName || "",
       email: userInfo?.email || users?.email || "",
       phone: userInfo?.phone || users?.phone || "",
-      address: userInfo?.address || users?.address || "",
+      city: userInfo?.address?.city || users?.address?.city || "",
+      state: userInfo?.address?.state || users?.address?.state || "",
+      pinCode: userInfo?.address?.pinCode || users?.address?.pinCode || "",
     },
     validateOnBlur: false,
     validateOnChange: false,
 
     onSubmit: async (values) => {
       try {
-      
         values = await Object.assign(values, { profilePic: file || "" });
         const res = await updateUser(values).unwrap();
-       
 
         dispatch(setCredentials({ userInfo: { ...res } }));
         navigate("/");
@@ -106,7 +95,7 @@ const Profile = () => {
 
   const onUpload = async (e) => {
     const base64 = await convertToBase64(e.target.files[0], 400);
-    
+
     setFile(base64);
   };
 
@@ -219,12 +208,27 @@ const Profile = () => {
                   {formik.errors.email && formik.touched.email && (
                     <span className={styles.error}>{formik.errors.email}</span>
                   )}
-                  <input
-                    {...formik.getFieldProps("address")}
-                    className={`${styles.textbox} ${extend.textbox}`}
-                    type="text"
-                    placeholder="Address"
-                  />
+                  <div className="name  flex w-3/4 gap-10">
+                    <input
+                      {...formik.getFieldProps("city")}
+                      className={`${styles.textbox} ${extend.textbox}`}
+                      type="text"
+                      placeholder="city"
+                    />
+                    <input
+                      {...formik.getFieldProps("state")}
+                      className={`${styles.textbox} ${extend.textbox}`}
+                      type="text"
+                      placeholder="state"
+                    />
+                    <input
+                      {...formik.getFieldProps("pinCode")}
+                      className={`${styles.textbox} ${extend.textbox}`}
+                      type="text"
+                      placeholder="pinCode"
+                    />
+                  </div>
+
                   <button className={styles.btn} type="submit">
                     Update
                   </button>

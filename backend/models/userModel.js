@@ -44,7 +44,15 @@ const userSchema = new mongoose.Schema(
       type: Array,
     },
     address: {
-      type: String,
+      city: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
+      pinCode: {
+        type: String,
+      },
     },
     isVerified: {
       type: Boolean,

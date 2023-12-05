@@ -219,7 +219,16 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, phone, address, profilePic } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    city,
+    state,
+    pinCode,
+    profilePic,
+  } = req.body;
   const user = await User.findById(req.user._id);
   console.log(user.email);
   if (user) {
@@ -227,7 +236,9 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
     user.phone = phone || user.phone;
-    user.address = address || user.address;
+    user.address.city = city || user.address.city;
+    user.address.state = state || user.address.state;
+    user.address.pinCode = pinCode || user.address.pinCode;
     user.profilePic = profilePic || user.profilePic;
 
     const updatedUser = await user.save();

@@ -111,6 +111,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const getUserInfo = async () => {
     // const data = await getUser({ userName }).unwrap();
     const data = await getUserById({ userId }).unwrap();
+    console.log(data, "user data");
     if (data.blocked) {
       await logout();
       dispatch(clearCredentials());
@@ -505,11 +506,13 @@ const UserWidget = ({ userId, picturePath }) => {
               <Box p="1rem 0">
                 <Box display="flex" alignItems="center" gap="1rem" mb="0.5rem">
                   <LocationOnOutlined fontSize="large" sx={{ color: main }} />
-                  <Typography color={medium}>{address}</Typography>
+                  <Typography
+                    color={medium}
+                  >{`${address.city}, ${address.state}, pin:${address.pinCode}`}</Typography>
                 </Box>
                 <Box display="flex" alignItems="center" gap="1rem">
                   <WorkOutlineOutlined fontSize="large" sx={{ color: main }} />
-                  <Typography color={medium}>{address}</Typography>
+                  <Typography color={medium}>{address.city}</Typography>
                 </Box>
               </Box>
 

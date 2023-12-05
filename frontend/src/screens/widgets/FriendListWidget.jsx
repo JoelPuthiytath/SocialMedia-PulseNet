@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   ButtonGroup,
@@ -37,21 +38,26 @@ const FriendListWidget = ({ userId }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [clickFollowers, setClickFollowers] = useState(true);
   const [clickFollowing, setClickFollowings] = useState(false);
+  const [clickSearch, setClickSearch] = useState(false);
   const [searchUser] = useSearchUserMutation();
 
   useEffect(() => {
     (async () => {
       const data = await getFriends({ userId }).unwrap();
-    
+
       dispatch(
         setFriends({ followers: data.followers, following: data.following })
       );
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const performSearch = async () => {
-    const res = await searchUser({ searchTerm }).unwrap();
-   
-    setSearchResults(res);
+    try {
+      const res = await searchUser({ searchTerm }).unwrap();
+      setSearchResults(res);
+      setClickSearch(true);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleClickFollower = () => {
@@ -82,6 +88,55 @@ const FriendListWidget = ({ userId }) => {
           <Search />
         </IconButton>
       </FlexBetween>
+      {clickSearch && (
+        <>
+          {searchResults.length > 0 ? (
+            <>
+              <Typography
+                marginTop={"2rem"}
+                color={palette.neutral.dark}
+                variant="h5"
+                fontWeight="500"
+                sx={{ mb: "1.5rem" }}
+              >
+                Search Result
+              </Typography>
+              <WidgetWrapper>
+                <Box display="flex" flexDirection="column" gap="1.5rem">
+                  {searchResults.map((friend) => (
+                    <Friend
+                      key={friend._id}
+                      friendId={friend._id}
+                      name={`${friend.firstName} ${friend.lastName}`}
+                      subtitle={friend.userName}
+                      userProfilePic={friend.profilePic}
+                    />
+                  ))}
+                </Box>
+              </WidgetWrapper>
+            </>
+          ) : (
+            <>
+              <Alert
+                className="my-3"
+                color="info"
+                variant="outlined"
+                action={
+                  <IconButton
+                    color="inherit"
+                    size="small"
+                    onClick={() => setClickSearch(false)} // Close button action
+                  >
+                    {/* <CloseIcon fontSize="inherit" /> */}x
+                  </IconButton>
+                }
+              >
+                {`There isn't any user named ${searchTerm}`}
+              </Alert>
+            </>
+          )}
+        </>
+      )}
       <FlexBetween marginTop={3}>
         <ButtonGroup
           disableElevation
@@ -93,32 +148,6 @@ const FriendListWidget = ({ userId }) => {
           <Button onClick={handleClickFollowing}>Following</Button>
         </ButtonGroup>
       </FlexBetween>
-      {searchResults.length > 0 && (
-        <>
-          <Typography
-            marginTop={"2rem"}
-            color={palette.neutral.dark}
-            variant="h5"
-            fontWeight="500"
-            sx={{ mb: "1.5rem" }}
-          >
-            Search Result
-          </Typography>
-          <WidgetWrapper>
-            <Box display="flex" flexDirection="column" gap="1.5rem">
-              {searchResults.map((friend) => (
-                <Friend
-                  key={friend._id}
-                  friendId={friend._id}
-                  name={`${friend.firstName} ${friend.lastName}`}
-                  subtitle={friend.userName}
-                  userProfilePic={friend.profilePic}
-                />
-              ))}
-            </Box>
-          </WidgetWrapper>
-        </>
-      )}
 
       {clickFollowers && followers?.length > 0 && (
         <WidgetWrapper marginTop={"2rem"}>

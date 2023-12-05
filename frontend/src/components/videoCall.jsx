@@ -35,7 +35,7 @@ const Videocall = () => {
 
   const receiverId = chat?.members?.find((id) => id !== currentUser);
   useEffect(() => {
-    socket.current = io(process.env.REACT_APP_HOSTED_URL);
+    socket.current = io(import.meta.env.VITE_REACT_APP_HOSTED_URL);
     socket.current.emit("new-user-add", userInfo._id);
 
     navigator.mediaDevices
