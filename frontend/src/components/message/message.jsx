@@ -213,10 +213,6 @@ const Message = ({
   }, [receiveMessage]);
 
   useEffect(() => {
-    scroll.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  useEffect(() => {
     // navigator.mediaDevices
     //   .getUserMedia({ video: true, audio: true })
     //   .then((stream) => {
@@ -364,6 +360,11 @@ const Message = ({
     setVideoCall(false);
     connectionRef.current.destroy();
   };
+
+  useEffect(() => {
+    scroll.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+  
   return (
     <>
       {userData && chat ? (

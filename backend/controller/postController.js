@@ -352,7 +352,7 @@ const postById = asyncHandler(async (req, res) => {
   try {
     const aggregatedPost = await Post.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(postId) },
+        $match: { _id: postId },
       },
       {
         $lookup: {
