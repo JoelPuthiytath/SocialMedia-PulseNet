@@ -110,6 +110,7 @@ const FriendListWidget = ({ userId }) => {
                       name={`${friend.firstName} ${friend.lastName}`}
                       subtitle={friend.userName}
                       userProfilePic={friend.profilePic}
+                      friendList={true}
                     />
                   ))}
                 </Box>
@@ -168,6 +169,7 @@ const FriendListWidget = ({ userId }) => {
                 name={`${friend.firstName} ${friend.lastName}`}
                 subtitle={friend.userName}
                 userProfilePic={friend.profilePic}
+                friendList={true}
               />
             ))}
           </Box>
@@ -192,6 +194,7 @@ const FriendListWidget = ({ userId }) => {
                 name={`${friend.firstName} ${friend.lastName}`}
                 subtitle={friend.userName}
                 userProfilePic={friend.profilePic}
+                friendList={true}
               />
             ))}
           </Box>

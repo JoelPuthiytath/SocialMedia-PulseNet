@@ -14,6 +14,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { getDirname } from "./utils/util.js";
 import { Server } from "socket.io";
+import { ExpressPeerServer } from "peer";
 import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
@@ -70,10 +71,16 @@ const server = app.listen(port, () =>
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.HOSTED_URL || "http://localhost:5000",
+    // origin: process.env.HOSTED_URL || "http://localhost:5000",
+    origin: "http://localhost:5000",
+
     methods: ["GET", "POST"],
   },
 });
+const peerServer = ExpressPeerServer(server, {
+  path: "/peerjs",
+});
+app.use("/peerjs", peerServer);
 
 let activeUsers = [];
 

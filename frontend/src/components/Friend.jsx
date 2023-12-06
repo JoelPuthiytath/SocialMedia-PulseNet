@@ -23,7 +23,14 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 const ITEM_HEIGHT = 38;
 
-const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
+const Friend = ({
+  friendId,
+  name,
+  subtitle,
+  userProfilePic,
+  postId,
+  friendList = false,
+}) => {
   const options = ["Edit", "Delete", "Cancel"];
 
   const dispatch = useDispatch();
@@ -45,6 +52,7 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
   const [getFeedPost] = useGetFeedPostMutation();
 
   const [addFriend] = useAddFriendMutation();
+  console.log(friendList, "frinedlist");
 
   const isFriend =
     userId !== friendId
@@ -107,74 +115,78 @@ const Friend = ({ friendId, name, subtitle, userProfilePic, postId }) => {
           </Typography>
         </Box>
       </FlexBetween>
-      {isFriend !== null && (
+      {friendList === true ? null : (
         <>
-          {isFriend ? (
-            // <PersonRemoveOutlined sx={{ color: primaryDark }} />
-            <PostMenu postId={postId} friendId={friendId} isFriend={true} />
-          ) : (
+          {isFriend !== null && (
             <>
-              <div className="d-flex align-items-center">
-                <IconButton onClick={patchFriend}>
-                  {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
-                  <span className="btn btn-sm btn-outline-primary">
-                    {" "}
-                    Follow
-                  </span>
+              {isFriend ? (
+                // <PersonRemoveOutlined sx={{ color: primaryDark }} />
+                <PostMenu postId={postId} friendId={friendId} isFriend={true} />
+              ) : (
+                <>
+                  <div className="d-flex align-items-center">
+                    <IconButton onClick={patchFriend}>
+                      {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
+                      <span className="btn btn-sm btn-outline-primary">
+                        {" "}
+                        Follow
+                      </span>
+                    </IconButton>
+                    <PostMenu
+                      postId={postId}
+                      friendId={friendId}
+                      isFriend={false}
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
+          {userId === friendId && (
+            <>
+              <div>
+                <IconButton
+                  aria-label="more"
+                  id="long-button"
+                  aria-controls={open ? "long-menu" : undefined}
+                  aria-expanded={open ? "true" : undefined}
+                  aria-haspopup="true"
+                  onClick={handleClick}
+                  style={{
+                    fontSize: "16px",
+                    width: "32px",
+                    height: "32px",
+                  }}
+                >
+                  <MoreVertIcon style={{ fontSize: "16px" }} />
                 </IconButton>
-                <PostMenu
-                  postId={postId}
-                  friendId={friendId}
-                  isFriend={false}
-                />
+                <Menu
+                  id="long-menu"
+                  MenuListProps={{
+                    "aria-labelledby": "long-button",
+                  }}
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleClose}
+                  PaperProps={{
+                    style: {
+                      maxHeight: ITEM_HEIGHT * 4.5,
+                      width: "20ch",
+                    },
+                  }}
+                >
+                  {options.map((option) => (
+                    <MenuItem
+                      key={option}
+                      onClick={option === "Delete" ? postDelete : handleClose}
+                    >
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Menu>
               </div>
             </>
           )}
-        </>
-      )}
-      {userId === friendId && (
-        <>
-          <div>
-            <IconButton
-              aria-label="more"
-              id="long-button"
-              aria-controls={open ? "long-menu" : undefined}
-              aria-expanded={open ? "true" : undefined}
-              aria-haspopup="true"
-              onClick={handleClick}
-              style={{
-                fontSize: "16px",
-                width: "32px",
-                height: "32px",
-              }}
-            >
-              <MoreVertIcon style={{ fontSize: "16px" }} />
-            </IconButton>
-            <Menu
-              id="long-menu"
-              MenuListProps={{
-                "aria-labelledby": "long-button",
-              }}
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-              PaperProps={{
-                style: {
-                  maxHeight: ITEM_HEIGHT * 4.5,
-                  width: "20ch",
-                },
-              }}
-            >
-              {options.map((option) => (
-                <MenuItem
-                  key={option}
-                  onClick={option === "Delete" ? postDelete : handleClose}
-                >
-                  {option}
-                </MenuItem>
-              ))}
-            </Menu>
-          </div>
         </>
       )}
     </FlexBetween>

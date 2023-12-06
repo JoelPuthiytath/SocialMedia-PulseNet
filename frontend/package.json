@@ -23,6 +23,7 @@
     "lottie-web": "^5.12.2",
     "mdb-react-ui-kit": "^6.1.0",
     "pako": "^2.1.0",
+    "peer": "^1.0.1",
     "peerjs": "^1.5.1",
     "postcss": "^8.4.29",
     "react": "^18.2.0",

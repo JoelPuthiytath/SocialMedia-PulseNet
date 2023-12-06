@@ -32,9 +32,11 @@ import { Link, useNavigate } from "react-router-dom";
 import lottie from "lottie-web";
 import typingAnimation from "../../animation/animation.json";
 import Peer from "peerjs";
+
 import { toast } from "react-toastify";
 import VideoCallModal from "../videoCallModal";
 import { useSelector } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
 
 const Message = ({
   chat,
@@ -203,6 +205,20 @@ const Message = ({
     if (socket.current) {
       socket.current.on("typing", () => setIsTyping(true));
       socket.current.on("stop-typing", () => setIsTyping(false));
+
+      // socket.current.on("me", (id) => {
+      //   setMe(id);
+      // });
+      // socket.current.on("callUser", (data) => {
+      //   setVideoCall(true);
+      //   setIsIncomingCall(true);
+      //   setCaller(data.from);
+      //   setCallerSignal(data.signal);
+      // });
+      // socket.current.on("callAccepted", (signal) => {
+      //   connectionRef.current.signal(signal);
+      //   setCallAccepted(true);
+      // });
     }
   }, []);
 
@@ -213,28 +229,35 @@ const Message = ({
   }, [receiveMessage]);
 
   useEffect(() => {
+    // socket.current.on("me", (id) => {
+    //   setMe(id);
+    // });
     // navigator.mediaDevices
     //   .getUserMedia({ video: true, audio: true })
     //   .then((stream) => {
     //     setStream(stream);
     //     myVideo.current.srcObject = stream;
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error accessing media devices:", error);
     //   });
 
-    socket.current?.on("me", (userId) => {
-      setMe(userId);
-    });
+    // socket.current?.on("callUser", (data) => {
+    //   setVideoCall(true);
+    //   setIsIncomingCall(true);
+    //   setCaller(data.from);
+    //   setCallerSignal(data.signal);
+    // });
 
-    socket.current?.on("callUser", (data) => {
-      setVideoCall(true);
-      setIsIncomingCall(true);
-      setCaller(data.from);
-      setCallerSignal(data.signal);
-    });
+    // socket.current?.on("callAccepted", (signal) => {
+    //   connectionRef.current.signal(signal);
+    //   setCallAccepted(true);
+    // });
 
-    socket.current?.on("callAccepted", (signal) => {
-      connectionRef.current.signal(signal);
-      setCallAccepted(true);
-    });
+    return () => {
+      connectionRef.current && connectionRef.current.destroy();
+      stream && stream.getTracks().forEach((track) => track.stop());
+    };
   }, []);
 
   const answerCall = () => {
@@ -242,28 +265,30 @@ const Message = ({
     setIsIncomingCall(true);
     setCaller(userData.userId);
     setCallerSignal(callerSignal);
-
     const peer = new Peer({
       initiator: false,
       trickle: false,
       stream: stream,
+      debug: 3, // Enable debug logging
     });
-
     peer.on("signal", (data) => {
+      // Send the signal to the caller
+      console.log(data, "inside answer call peer signal");
       socket.current.emit("answerCall", {
         signal: data,
-        to: caller, // Send the signal to the caller
+        to: caller,
       });
     });
 
     peer.on("stream", (remoteStream) => {
+      console.log("answer call stream");
       userVideo.current.srcObject = remoteStream;
     });
 
+    // Set the signal received from the caller
     peer.signal(callerSignal);
 
     connectionRef.current = peer;
-
     setCallAccepted(true);
   };
 
@@ -274,41 +299,43 @@ const Message = ({
     }
 
     const peer = new Peer({
-      initiator: true,
+      initiator: false,
+      trickle: false,
       stream: stream,
+      debug: 3, // Enable debug logging
     });
 
-    const sendSignal = () => {
-      peer.on("signal", (data) => {
-        socket.current.emit("callUser", {
-          userToCall: receiverId,
-          signalData: data,
-          from: currentUser,
-          name: userData.userName,
-        });
+    peer.on("signal", (data) => {
+      console.log(data, "signelData");
+      socket.current.emit("callUser", {
+        userToCall: receiverId,
+        signalData: data,
+        from: currentUser,
+        name: userData.userName,
       });
-    };
-
-    peer.on("open", (id) => {
-      sendSignal();
     });
-
     peer.on("stream", (remoteStream) => {
+      console.log("inside the stream");
       userVideo.current.srcObject = remoteStream;
+    });
+    peer.on("open", (id) => {
+      console.log("Peer connection opened successfully", id);
+      console.log(`me id is ${me}`);
     });
 
     peer.on("error", (err) => {
-      console.error("Peer error:", err);
+      console.error("Peer error: call user", err);
     });
 
     peer.on("close", () => {
-      // Handle cleanup and UI updates when the call ends
+      console.log("inside the peer close");
       setCallEnded(true);
       setIsModalOpen(false);
       setVideoCall(false);
     });
 
     socket.current.on("callAccepted", (signal) => {
+      console.log("inside teh callAccepted");
       peer.signal(signal); // Signal the peer to complete the connection
       setCallAccepted(true);
     });
@@ -364,7 +391,7 @@ const Message = ({
   useEffect(() => {
     scroll.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-  
+
   return (
     <>
       {userData && chat ? (
@@ -406,7 +433,7 @@ const Message = ({
                     </Typography>
 
                     <Typography color={medium} fontSize="0.75rem">
-                      {online ? "Online" : userData?.address}
+                      {online ? "Online" : userData?.address.state}
                     </Typography>
                   </Box>
                 </Grid>

@@ -35,6 +35,8 @@
     "multer-gridfs-storage": "^5.0.2",
     "nodemailer": "^6.9.5",
     "otp-generator": "^4.0.1",
+    "peer": "^1.0.1",
+    "peerjs": "^1.5.1",
     "react-bootstrap": "^2.8.0",
     "react-icons": "^4.11.0",
     "react-redux": "^8.1.2",

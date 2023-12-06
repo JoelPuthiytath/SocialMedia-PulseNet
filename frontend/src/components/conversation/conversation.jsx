@@ -29,7 +29,6 @@ const Conversation = ({ data, currentUser, online }) => {
       try {
         const data = await getUserById({ userId }).unwrap();
         setUserData(data);
-       
       } catch (error) {
         console.log(error);
       }
@@ -72,7 +71,7 @@ const Conversation = ({ data, currentUser, online }) => {
                     {userData?.userName}
                   </Typography>
                   <Typography color={medium} fontSize="0.75rem">
-                    {online ? "Online" : userData?.address}
+                    {online ? "Online" : userData?.address.state}
                   </Typography>
                 </Box>
               </FlexBetween>
