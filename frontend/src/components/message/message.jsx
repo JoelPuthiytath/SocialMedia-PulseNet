@@ -62,6 +62,7 @@ const Message = ({
   const [userData, setUserData] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [me, setMe] = useState("");
   const [hoveredMessage, setHoveredMessage] = useState(null);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
@@ -69,8 +70,6 @@ const Message = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIncomingCall, setIsIncomingCall] = useState(false);
   const [caller, setCaller] = useState("");
-  const [stream, setStream] = useState();
-  const myVideo = useRef();
 
   const [callerSignal, setCallerSignal] = useState();
   const animationContainer = useRef(null);
@@ -103,13 +102,26 @@ const Message = ({
 
   useEffect(() => {
     if (socket.current) {
+      socket.current.emit("getSocketId", { currentUser });
+
+      socket.current.on("me", (socketId) => {
+        console.log("Received socketId:", socketId);
+        setMe(socketId);
+      });
+    }
+  }, [socket.current, currentUser]);
+
+  useEffect(() => {
+    if (socket.current) {
       socket.current.on("callUser", (data) => {
         console.log("inside the incoming call", data);
-        setVideoCall(true);
-        setIsIncomingCall(true);
-        setIsModalOpen(true);
-        setCaller(data.from);
-        setCallerSignal(data.signal);
+        if (!isIncomingCall) {
+          setIsModalOpen(true);
+          setVideoCall(true);
+          setIsIncomingCall(true);
+          setCaller(data.from);
+          setCallerSignal(data.signal);
+        }
       });
     }
   }, [socket.current]);
@@ -249,32 +261,6 @@ const Message = ({
     }
   };
 
-  useEffect(() => {
-    const getMediaStream = async () => {
-      try {
-        console.log("Requesting media stream...");
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        console.log("Received media stream:", mediaStream);
-
-        setStream(mediaStream);
-
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-          console.log("myVideo", myVideo.current.srcObject);
-        }
-      } catch (error) {
-        console.error("Error accessing media:", error);
-      }
-    };
-    if (!stream) {
-      getMediaStream();
-      return;
-    }
-  }, [stream]);
-
   const handleCallClick = () => {
     setIsModalOpen(true);
     setVideoCall(true);
@@ -351,9 +337,8 @@ const Message = ({
                 onClose={() => setIsModalOpen(false)}
                 isIncomingCall={isIncomingCall}
                 currentUser={currentUser}
-                myVideo={myVideo}
-                stream={stream}
                 caller={caller}
+                me={me}
                 socket={socket}
                 receiverId={receiverId}
                 name={userData.firstName}

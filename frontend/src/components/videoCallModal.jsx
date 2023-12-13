@@ -1,12 +1,12 @@
 import Modal from "@mui/material/Modal";
 import { styled } from "@mui/system";
 import CallEndIcon from "@mui/icons-material/CallEnd";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
+
 // import global from "global";
 // import * as process from "process";
 // global.process = process;
 // import Peer from "peerjs";
-
 import { Button } from "@mui/material";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
@@ -30,103 +30,98 @@ const VideoCallModal = ({
   open,
   onClose,
   socket,
-  myVideo,
-  stream,
   currentUser,
   callerSignal,
   receiverId,
   caller,
+  me,
   name,
   isIncomingCall,
 }) => {
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
-  const [me, setMe] = useState("");
+  const [videoReady, setVideoReady] = useState(false);
+  const [stream, setStream] = useState();
+  const myVideo = useRef();
 
   const userVideo = useRef();
 
   const peerConnectionRef = useRef();
 
   useEffect(() => {
-    socket.current.emit("getSocketId", { currentUser });
+    const getMediaStream = async () => {
+      try {
+        console.log("Requesting media stream...");
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .then((stream) => {
+            setStream(stream);
+            myVideo.current.srcObject = stream;
+            console.log("myVideo :", myVideo.current.srcObject);
+            const callUser = () => {
+              const peerConnection = new RTCPeerConnection();
+              console.log("callUser");
+              if (stream) {
+                console.log("inside stream");
+                stream.getTracks().forEach((track) => {
+                  peerConnection.addTrack(track, stream);
+                });
+              }
 
-    socket.current.on("me", (socketId) => {
-      console.log("Received socketId:", socketId);
-      setMe(socketId);
-    });
+              peerConnection
+                .createOffer()
+                .then((offer) => {
+                  return peerConnection.setLocalDescription(offer);
+                })
+                .then(() => {
+                  socket.current.emit("callUser", {
+                    userToCall: receiverId,
+                    signalData: peerConnection.localDescription,
+                    from: me,
+                    name: name,
+                  });
+                });
 
-    socket.current.on("callEnded", () => {
-      console.log("Call ended event received");
-      setCallEnded(true);
-      peerConnectionRef.current = null;
+              socket.current.on("callAccepted", (signal) => {
+                console.log("call accepted");
+                setCallAccepted(true);
+                peerConnection.setRemoteDescription(
+                  new RTCSessionDescription(signal)
+                );
+              });
 
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-        peerConnectionRef.current.distroy();
-        peerConnectionRef.current = null;
-      }
-      onClose();
-    });
-  }, [socket.current, currentUser]);
+              peerConnection.ontrack = (event) => {
+                console.log("inside event track of callUser");
+                if (event.streams && event.streams[0]) {
+                  if (userVideo.current) {
+                    userVideo.current.srcObject = event.streams[0];
+                    console.log(
+                      "Received video track:",
+                      userVideo.current.srcObject
+                    );
+                  }
+                }
+              };
 
-  useEffect(() => {
-    const callUser = () => {
-      const peerConnection = new RTCPeerConnection();
-      console.log("callUser");
-      if (stream) {
-        console.log("inside stream");
-        stream.getTracks().forEach((track) => {
-          console.log(track, "track");
-          peerConnection.addTrack(track, stream);
-        });
-      }
+              peerConnectionRef.current = peerConnection;
+            };
 
-      peerConnection
-        .createOffer()
-        .then((offer) => {
-          return peerConnection.setLocalDescription(offer);
-        })
-        .then(() => {
-          socket.current.emit("callUser", {
-            userToCall: receiverId,
-            signalData: peerConnection.localDescription,
-            from: me,
-            name: name,
+            if (!isIncomingCall) {
+              callUser();
+            }
+          })
+          .catch((error) => {
+            console.error("Error accessing user media:", error);
           });
-        });
-
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.current.emit("ice-candidate", {
-            to: receiverId,
-            candidate: event.candidate,
-          });
-        }
-      };
-
-      peerConnection.ontrack = (event) => {
-        console.log("inside event track of callUser");
-        if (event.streams && event.streams[0]) {
-          console.log("Received video track:", event.streams[0]);
-          if (userVideo.current) {
-            userVideo.current.srcObject = event.streams[0];
-          }
-        }
-      };
-
-      socket.current.on("callAccepted", (signal) => {
-        console.log("call accepted");
-        setCallAccepted(true);
-        peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
-      });
-
-      peerConnectionRef.current = peerConnection;
+      } catch (error) {
+        console.error("Error accessing media:", error);
+      }
     };
-
-    if (!isIncomingCall) {
-      callUser();
+    if (!stream) {
+      getMediaStream();
+      return;
     }
-  }, [isIncomingCall, me, receiverId, socket, name, stream]);
+  }, []);
 
   const answerCall = (callerId, signalData) => {
     console.log("callerId:", callerId);
@@ -135,9 +130,7 @@ const VideoCallModal = ({
     const peerConnection = new RTCPeerConnection();
 
     if (stream) {
-      console.log("inside answerCAll stream", stream);
       stream.getTracks().forEach((track) => {
-        console.log("track", track);
         peerConnection.addTrack(track, stream);
       });
     }
@@ -155,30 +148,34 @@ const VideoCallModal = ({
           to: callerId,
         });
       });
-
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.current.emit("ice-candidate", {
-          to: callerId,
-          candidate: event.candidate,
-        });
-      }
-    };
+    setCallAccepted(true);
 
     peerConnection.ontrack = (event) => {
       console.log("inside event track of anserCall");
 
       if (event.streams && event.streams[0]) {
-        console.log("Video tracks:", event.streams[0].getVideoTracks());
         userVideo.current.srcObject = event.streams[0];
         console.log("userVideo checking :", userVideo.current.srcObject);
       }
     };
 
-    setCallAccepted(true);
-
     peerConnectionRef.current = peerConnection;
   };
+
+  useEffect(() => {
+    socket.current.on("callEnded", () => {
+      console.log("Call ended event received");
+      setCallEnded(true);
+      peerConnectionRef.current = null;
+
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current.distroy();
+        peerConnectionRef.current = null;
+      }
+      onClose();
+    });
+  }, [socket.current, currentUser]);
 
   const handleCallEnd = () => {
     setCallEnded(true);
@@ -201,10 +198,8 @@ const VideoCallModal = ({
     >
       <ModalContent>
         <h2 id="video-call-modal">
-          {isIncomingCall ? "Incoming Video Call" : "Ongoing Video Call"} Id:{" "}
-          {me}
+          {isIncomingCall ? "Incoming Video Call" : "Ongoing Video Call"}
         </h2>
-        <h3 style={{ textAlign: "center", color: "#fff" }}>id: {me}</h3>
 
         <div className="video">
           {stream && (
