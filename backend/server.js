@@ -14,7 +14,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { getDirname } from "./utils/util.js";
 import { Server } from "socket.io";
-import { ExpressPeerServer } from "peer";
 import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
@@ -71,16 +70,12 @@ const server = app.listen(port, () =>
 
 const io = new Server(server, {
   cors: {
-    // origin: process.env.HOSTED_URL || "http://localhost:5000",
-    origin: "http://localhost:5000",
+    origin: process.env.HOSTED_URL || "http://localhost:5000",
+    // origin: "http://localhost:5000",
 
     methods: ["GET", "POST"],
   },
 });
-const peerServer = ExpressPeerServer(server, {
-  path: "/peerjs",
-});
-app.use("/peerjs", peerServer);
 
 let activeUsers = [];
 
@@ -97,10 +92,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    // remove user from active users
     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
     console.log("User Disconnected", activeUsers);
-    // send all active users to all users
+
     io.emit("get-users", activeUsers);
   });
 
@@ -151,7 +145,17 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.emit("me", socket.id);
+  socket.on("getSocketId", (data) => {
+    console.log(data.currentUser, "current user");
+    const userId = data.currentUser;
+    const user = activeUsers.find((user) => user.userId === userId);
+
+    if (user) {
+      io.to(socket.id).emit("me", user.socketId);
+    } else {
+      console.log("User not found");
+    }
+  });
 
   socket.on("callUser", (data) => {
     console.log("Received callUser event:", data);
@@ -170,11 +174,26 @@ io.on("connection", (socket) => {
       });
     }
   });
+  socket.on("ice-candidate", (data) => {
+    io.to(data.to).emit("ice-candidate", {
+      candidate: data.candidate,
+    });
+  });
 
   socket.on("answerCall", (data) => {
-    const user = activeUsers.find((user) => user.userId === data.to);
+    console.log(data.to, "answerCall data to");
+
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+  socket.on("callEnded", (data) => {
+    console.log(data, "inside callEnd");
+    const { userId } = data;
+    const user = activeUsers.find((user) => user.userId === userId);
+
     if (user) {
-      io.to(user.socketId).emit("callAccepted", data.signal);
+      io.to(user.socketId).emit("callEnded");
+    } else {
+      console.log("User not found");
     }
   });
 });

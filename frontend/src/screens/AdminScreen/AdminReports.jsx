@@ -271,18 +271,17 @@ const AdminReports = () => {
                             <TableRow key={report._id}>
                               <TableCell>
                                 {
-                                  <Link
-                                    to={{
-                                      pathname: `http://localhost:5000/admin/posts/${report.postId}`,
-                                      state: { isAdmin: true },
-                                    }}
+                                  <button
                                     style={{
+                                      fontSize: "1.2rem",
                                       textDecoration: "none",
-                                      color: "red",
+                                    }}
+                                    onClick={() => {
+                                      handleButtonClick(report.postId);
                                     }}
                                   >
-                                    <span>{report.reportReason}</span>
-                                  </Link>
+                                    Link
+                                  </button>
                                 }
                               </TableCell>
                               <TableCell>{report.count}</TableCell>

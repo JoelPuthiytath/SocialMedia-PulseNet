@@ -42,6 +42,7 @@ import Reset from "./components/UserComponents/Authentication/Reset.jsx";
 import NotFound from "./components/UserComponents/Authentication/NotFound.jsx";
 import ProfilePage from "./screens/Profile/profilePage.jsx";
 import Vidocall from "./components/videoCall.jsx";
+import AdminReports from "./screens/AdminScreen/AdminReports.jsx";
 // import ProfilePage from "./screens/Profile/profilePage.jsx";
 // ****
 

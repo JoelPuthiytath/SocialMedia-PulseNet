@@ -106,7 +106,6 @@ export default function MiniDrawer() {
   const { adminInfo } = useSelector((state) => state.adminAuth);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
-
   const neutralLight = theme.palette.neutral.light;
   const dark = theme.palette.neutral.dark;
   const background = theme.palette.background.default;
@@ -158,7 +157,7 @@ export default function MiniDrawer() {
                 fontWeight="bold"
                 fontSize="clamp(1rem, 2rem, 2.25rem)"
                 color="primary"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/admin/home")}
                 sx={{
                   "&:hover": {
                     color: primaryLight,

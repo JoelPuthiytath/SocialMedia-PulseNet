@@ -28,10 +28,8 @@ const ProfilePage = () => {
 
   const { userInfo } = useSelector((state) => state.authUser);
   const getUser = async () => {
-
     try {
       const data = await getUserById({ userId }).unwrap();
-    
 
       setUser(data);
     } catch (error) {

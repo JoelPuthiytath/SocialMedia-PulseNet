@@ -31,7 +31,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import lottie from "lottie-web";
 import typingAnimation from "../../animation/animation.json";
-import Peer from "peerjs";
 
 import { toast } from "react-toastify";
 import VideoCallModal from "../videoCallModal";
@@ -48,8 +47,8 @@ const Message = ({
   // postId,
 }) => {
   const { palette } = useTheme();
-  const primaryLight = palette.primary.light;
-  const primaryDark = palette.primary.dark;
+  // const primaryLight = palette.primary.light;
+  // const primaryDark = palette.primary.dark;
   const dark = palette.neutral.dark;
 
   const main = palette.neutral.main;
@@ -69,28 +68,51 @@ const Message = ({
   const [VideoCall, setVideoCall] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIncomingCall, setIsIncomingCall] = useState(false);
-  const [callAccepted, setCallAccepted] = useState(false);
   const [caller, setCaller] = useState("");
-  const [callerSignal, setCallerSignal] = useState();
-  const [me, setMe] = useState("");
   const [stream, setStream] = useState();
-  const [callEnded, setCallEnded] = useState(false);
+  const myVideo = useRef();
 
+  const [callerSignal, setCallerSignal] = useState();
   const animationContainer = useRef(null);
   const typingRef = useRef(typing);
   const scroll = useRef();
-  const userVideo = useRef();
-  const connectionRef = useRef();
-  const myVideo = useRef();
 
   const { userInfo } = useSelector((state) => state.authUser);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const actions = [
     { icon: <FileCopyIcon />, name: "Copy" },
     { icon: <DeleteOutlineIcon />, name: "Unsend" },
   ];
+
+  const fetchMessges = async () => {
+    try {
+      const chatId = chat._id;
+
+      const data = await getMessages({ chatId }).unwrap();
+      setMessages(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (chat !== null) fetchMessges();
+  }, [chat]);
+
+  useEffect(() => {
+    if (socket.current) {
+      socket.current.on("callUser", (data) => {
+        console.log("inside the incoming call", data);
+        setVideoCall(true);
+        setIsIncomingCall(true);
+        setIsModalOpen(true);
+        setCaller(data.from);
+        setCallerSignal(data.signal);
+      });
+    }
+  }, [socket.current]);
 
   useEffect(() => {
     const animation = lottie.loadAnimation({
@@ -159,20 +181,6 @@ const Message = ({
     if (chat !== null) getUserData();
   }, [chat, currentUser]);
 
-  const fetchMessges = async () => {
-    try {
-      const chatId = chat._id;
-
-      const data = await getMessages({ chatId }).unwrap();
-      setMessages(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    if (chat !== null) fetchMessges();
-  }, [chat]);
-
   const receiverId = chat?.members?.find((id) => id !== currentUser);
 
   const handleSend = async (e) => {
@@ -201,147 +209,18 @@ const Message = ({
     }
   };
 
-  useEffect(() => {
-    if (socket.current) {
-      socket.current.on("typing", () => setIsTyping(true));
-      socket.current.on("stop-typing", () => setIsTyping(false));
-
-      // socket.current.on("me", (id) => {
-      //   setMe(id);
-      // });
-      // socket.current.on("callUser", (data) => {
-      //   setVideoCall(true);
-      //   setIsIncomingCall(true);
-      //   setCaller(data.from);
-      //   setCallerSignal(data.signal);
-      // });
-      // socket.current.on("callAccepted", (signal) => {
-      //   connectionRef.current.signal(signal);
-      //   setCallAccepted(true);
-      // });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (socket.current) {
+  //     socket.current.on("typing", () => setIsTyping(true));
+  //     socket.current.on("stop-typing", () => setIsTyping(false));
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (receiveMessage !== null && receiveMessage.chatId === chat._id) {
       setMessages([...messages, receiveMessage]);
     }
   }, [receiveMessage]);
-
-  useEffect(() => {
-    // socket.current.on("me", (id) => {
-    //   setMe(id);
-    // });
-    // navigator.mediaDevices
-    //   .getUserMedia({ video: true, audio: true })
-    //   .then((stream) => {
-    //     setStream(stream);
-    //     myVideo.current.srcObject = stream;
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error accessing media devices:", error);
-    //   });
-
-    // socket.current?.on("callUser", (data) => {
-    //   setVideoCall(true);
-    //   setIsIncomingCall(true);
-    //   setCaller(data.from);
-    //   setCallerSignal(data.signal);
-    // });
-
-    // socket.current?.on("callAccepted", (signal) => {
-    //   connectionRef.current.signal(signal);
-    //   setCallAccepted(true);
-    // });
-
-    return () => {
-      connectionRef.current && connectionRef.current.destroy();
-      stream && stream.getTracks().forEach((track) => track.stop());
-    };
-  }, []);
-
-  const answerCall = () => {
-    setVideoCall(true);
-    setIsIncomingCall(true);
-    setCaller(userData.userId);
-    setCallerSignal(callerSignal);
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream: stream,
-      debug: 3, // Enable debug logging
-    });
-    peer.on("signal", (data) => {
-      // Send the signal to the caller
-      console.log(data, "inside answer call peer signal");
-      socket.current.emit("answerCall", {
-        signal: data,
-        to: caller,
-      });
-    });
-
-    peer.on("stream", (remoteStream) => {
-      console.log("answer call stream");
-      userVideo.current.srcObject = remoteStream;
-    });
-
-    // Set the signal received from the caller
-    peer.signal(callerSignal);
-
-    connectionRef.current = peer;
-    setCallAccepted(true);
-  };
-
-  const callUser = () => {
-    if (!stream) {
-      console.error("No stream available");
-      return;
-    }
-
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream: stream,
-      debug: 3, // Enable debug logging
-    });
-
-    peer.on("signal", (data) => {
-      console.log(data, "signelData");
-      socket.current.emit("callUser", {
-        userToCall: receiverId,
-        signalData: data,
-        from: currentUser,
-        name: userData.userName,
-      });
-    });
-    peer.on("stream", (remoteStream) => {
-      console.log("inside the stream");
-      userVideo.current.srcObject = remoteStream;
-    });
-    peer.on("open", (id) => {
-      console.log("Peer connection opened successfully", id);
-      console.log(`me id is ${me}`);
-    });
-
-    peer.on("error", (err) => {
-      console.error("Peer error: call user", err);
-    });
-
-    peer.on("close", () => {
-      console.log("inside the peer close");
-      setCallEnded(true);
-      setIsModalOpen(false);
-      setVideoCall(false);
-    });
-
-    socket.current.on("callAccepted", (signal) => {
-      console.log("inside teh callAccepted");
-      peer.signal(signal); // Signal the peer to complete the connection
-      setCallAccepted(true);
-    });
-
-    connectionRef.current = peer;
-  };
 
   // handle unsend message
 
@@ -351,16 +230,6 @@ const Message = ({
 
   const handleMouseLeave = () => {
     setHoveredMessage(null);
-  };
-
-  const handleCallClick = () => {
-    // callUser();
-    // setIsModalOpen(true);
-    // setVideoCall(true);
-    // console.log(VideoCall, "video call");
-    toast.warning(
-      "🚧 Feature in progress! We're working hard behind the scenes. Thanks for your patience!"
-    );
   };
 
   const handleActionClick = async (actionName, messageId) => {
@@ -380,18 +249,41 @@ const Message = ({
     }
   };
 
-  const handleCallEnd = () => {
-    // Handle the logic when the call ends
-    setCallEnded(true);
-    setIsModalOpen(false); // Close the modal when the call ends
-    setVideoCall(false);
-    connectionRef.current.destroy();
+  useEffect(() => {
+    const getMediaStream = async () => {
+      try {
+        console.log("Requesting media stream...");
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        console.log("Received media stream:", mediaStream);
+
+        setStream(mediaStream);
+
+        if (myVideo.current) {
+          myVideo.current.srcObject = stream;
+          console.log("myVideo", myVideo.current.srcObject);
+        }
+      } catch (error) {
+        console.error("Error accessing media:", error);
+      }
+    };
+    if (!stream) {
+      getMediaStream();
+      return;
+    }
+  }, [stream]);
+
+  const handleCallClick = () => {
+    setIsModalOpen(true);
+    setVideoCall(true);
+    console.log(VideoCall, "video call");
   };
 
   useEffect(() => {
     scroll.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
   return (
     <>
       {userData && chat ? (
@@ -433,11 +325,10 @@ const Message = ({
                     </Typography>
 
                     <Typography color={medium} fontSize="0.75rem">
-                      {online ? "Online" : userData?.address.state}
+                      {online ? "online" : userData?.address.state}
                     </Typography>
                   </Box>
                 </Grid>
-
                 <Grid
                   item
                   xs={3}
@@ -454,19 +345,21 @@ const Message = ({
               </Grid>
             </div>
 
-            {/* {(VideoCall || isIncomingCall) && (
+            {VideoCall && (
               <VideoCallModal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 isIncomingCall={isIncomingCall}
+                currentUser={currentUser}
                 myVideo={myVideo}
-                callAccepted={callAccepted}
-                callEnded={callEnded}
-                userVideo={userVideo}
-                onCallEnd={handleCallEnd}
-                answerCall={answerCall}
+                stream={stream}
+                caller={caller}
+                socket={socket}
+                receiverId={receiverId}
+                name={userData.firstName}
+                callerSignal={callerSignal}
               />
-            )} */}
+            )}
 
             <div className="messages-container">
               {messages &&
