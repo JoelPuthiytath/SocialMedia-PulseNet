@@ -101,8 +101,6 @@ const VideoCallModal = ({
             if (myVideo.current) {
               myVideo.current.srcObject = stream;
             }
-            console.log("myVideo :", myVideo.current.srcObject);
-
             const callUser = () => {
               const peerConnection = new RTCPeerConnection();
               console.log("callUser");
@@ -169,7 +167,7 @@ const VideoCallModal = ({
       getMediaStream();
     }
   }, []);
-  
+
   const answerCall = (callerId, signalData) => {
     console.log("callerId:", callerId);
     console.log("signalData:", signalData);
