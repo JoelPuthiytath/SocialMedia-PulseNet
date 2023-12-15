@@ -1,0 +1,54 @@
+/* YourComponent.css */
+
+.video-call-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .video {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .small-video {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .caller {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .caller h1 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .caller IconButton {
+    background-color: #4caf50;
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+    margin-top: 1rem;
+  }
+  
+  .end-call IconButton {
+    background-color: #f44336;
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+  }
+  
+  
