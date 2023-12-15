@@ -70,7 +70,7 @@ const server = app.listen(port, () =>
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.HOSTED_URL || "http://localhost:5000",
+    origin: process.env.HOSTED_URL,
     // origin: "http://localhost:5000",
 
     methods: ["GET", "POST"],
