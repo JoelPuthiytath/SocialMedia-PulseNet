@@ -72,116 +72,41 @@ const VideoCallModal = ({
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
   // const [videoReady, setVideoReady] = useState(false);
+  const renderCall = useRef(false);
   const [stream, setStream] = useState();
   const myVideo = useRef(null);
   const [video, setVideo] = useState(null);
   const userVideo = useRef(null);
   const peerConnectionRef = useRef(null);
 
-  useLayoutEffect(() => {
-    if (isIncomingCall) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then((stream) => {
-          console.log("stetting stream: " + stream);
-          setStream(stream);
-          if (myVideo.current) {
-            myVideo.current.srcObject = stream;
-          }
-        });
-    }
-  }, [isIncomingCall]);
-
   useEffect(() => {
-    const callUser = async () => {
-      const peerConnection = new RTCPeerConnection();
-      console.log("callUser");
-      const vidStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      setStream(vidStream);
-      if (myVideo.current) {
-        myVideo.current.srcObject = vidStream;
-      }
-      if (myVideo.current?.srcObject) {
-        myVideo.current.srcObject.getTracks().forEach((track) => {
-          console.log("inside track", track);
-
-          peerConnection.addTrack(track, myVideo.current.srcObject);
-        });
-      }
-
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          // Send the ICE candidate to the remote peer
-          socket.current.emit("ice-candidate", {
-            target: receiverId,
-            candidate: event.candidate,
-          });
-        }
-      };
-
-      peerConnection
-        .createOffer()
-        .then((offer) => {
-          return peerConnection.setLocalDescription(offer);
-        })
-        .then(() => {
-          socket.current.emit("callUser", {
-            userToCall: receiverId,
-            signalData: peerConnection.localDescription,
-            from: me,
-            name: name,
-          });
+    const initializeVideoCall = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
         });
 
-      socket.current.on("callAccepted", (signal) => {
-        console.log("call accepted");
+        setStream(stream);
 
-        peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
-      });
-
-      // Handle received ICE candidates
-      socket.current.on("ice-candidate", (data) => {
-        const { candidate } = data;
-
-        // Add the received ICE candidate to the RTCPeerConnection
-        peerConnection
-          .addIceCandidate(new RTCIceCandidate(candidate))
-          .catch((error) => {
-            console.error("Error adding ICE candidate:", error);
-          });
-      });
-
-      peerConnection.ontrack = (event) => {
-        console.log("inside event track of callUser");
-
-        if (event.streams && event.streams[0]) {
-          setCallAccepted(true);
-
-          userVideo.current.srcObject = event.streams[0];
+        if (myVideo.current) {
+          myVideo.current.srcObject = stream;
+          console.log(myVideo.current.srcObject, "streaming");
         }
-      };
-      peerConnectionRef.current = peerConnection;
-    };
-
-    if (!isIncomingCall) {
-      callUser();
-    }
-
-    return () => {
-      // Cleanup code
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-        peerConnectionRef.current = null;
+      } catch (error) {
+        console.error("Error getting user media:", error);
       }
+
+      if (!myVideo.current?.srcObject) return initializeVideoCall();
     };
+
+    initializeVideoCall();
   }, []);
 
   const answerCall = async (callerId, signalData) => {
     console.log("callerId:", callerId);
     console.log("signalData:", signalData);
+    console.log("stream", stream);
 
     const peerConnection = new RTCPeerConnection();
 
@@ -196,7 +121,7 @@ const VideoCallModal = ({
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        // Send the ICE candidate to the remote peer
+        console.log("Sending ICE candidate:", event.candidate);
         socket.current.emit("ice-candidate", {
           target: callerId,
           candidate: event.candidate,
@@ -241,11 +166,9 @@ const VideoCallModal = ({
       }
     };
 
-    // Handle received ICE candidates
     socket.current.on("ice-candidate", (data) => {
       const { candidate } = data;
 
-      // Add the received ICE candidate to the RTCPeerConnection
       peerConnection
         .addIceCandidate(new RTCIceCandidate(candidate))
         .catch((error) => {
@@ -259,45 +182,151 @@ const VideoCallModal = ({
   };
 
   useEffect(() => {
+    const callUser = async () => {
+      const peerConnection = new RTCPeerConnection({
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302",
+          },
+        ],
+      });
+
+      console.log("stream", stream);
+      if (myVideo.current) {
+        console.log(myVideo.current.srcObject, "my stream");
+      }
+      if (myVideo.current?.srcObject) {
+        myVideo.current.srcObject.getTracks().forEach((track) => {
+          console.log("inside track", track);
+
+          peerConnection.addTrack(track, myVideo.current.srcObject);
+        });
+      }
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.current.emit("ice-candidate", {
+            target: receiverId,
+            candidate: event.candidate,
+          });
+        }
+      };
+
+      try {
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        socket.current.emit("callUser", {
+          userToCall: receiverId,
+          signalData: peerConnection.localDescription,
+          from: me,
+          name: name,
+        });
+      } catch (error) {
+        console.error(
+          "Error creating offer or setting local description:",
+          error
+        );
+      }
+
+      socket.current.on("callAccepted", (signal) => {
+        console.log("call accepted");
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
+      });
+
+      // Handle received ICE candidates
+      socket.current.on("ice-candidate", (data) => {
+        const { candidate } = data;
+
+        // Add the received ICE candidate to the RTCPeerConnection
+        peerConnection
+          .addIceCandidate(new RTCIceCandidate(candidate))
+          .catch((error) => {
+            console.error("Error adding ICE candidate:", error);
+          });
+      });
+
+      peerConnection.ontrack = (event) => {
+        console.log("inside event track of callUser");
+
+        if (event.streams && event.streams[0]) {
+          setCallAccepted(true);
+
+          userVideo.current.srcObject = event.streams[0];
+        }
+      };
+      peerConnectionRef.current = peerConnection;
+    };
+
+    if (!isIncomingCall) {
+      callUser();
+    }
+    return () => {
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.getSenders().forEach((sender) => {
+          const track = sender.track;
+          if (track) {
+            track.stop();
+            peerConnectionRef.current.removeTrack(sender);
+          }
+        });
+
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
+      }
+    };
+  }, [isIncomingCall, me, name, receiverId, socket, stream]);
+
+  useEffect(() => {
     socket.current.on("callEnded", () => {
       console.log("Call ended event received");
       setCallEnded(true);
-      peerConnectionRef.current = null;
+      if (stream) {
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+
+      if (myVideo.current) {
+        myVideo.current.srcObject = null;
+      }
+
+      if (userVideo.current) {
+        userVideo.current.srcObject = null;
+      }
 
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
-        peerConnectionRef.current.distroy();
         peerConnectionRef.current = null;
       }
       onClose();
     });
-  }, [socket.current]);
-
+  }, [socket.current, stream]);
   const handleCallEnd = () => {
     console.log("inside cal end");
-    setCallEnded(true);
     onClose();
+
     if (stream) {
       stream.getTracks().forEach((track) => {
         track.stop();
       });
+    }
 
-      // Set srcObject to null to stop video playback
-      if (myVideo.current) {
-        myVideo.current.srcObject = null;
-      }
+    if (myVideo.current) {
+      myVideo.current.srcObject = null;
+    }
+
+    if (userVideo.current) {
+      userVideo.current.srcObject = null;
     }
 
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
+    setCallEnded(true);
 
     socket.current.emit("callEnded", { userId: receiverId });
   };
-
-  console.log(userVideo.current?.srcObject, " <== user video calll");
-  console.log(myVideo.current?.srcObject, " <== my video calll");
 
   return (
     <StyledModal
