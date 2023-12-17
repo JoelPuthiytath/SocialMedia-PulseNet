@@ -174,10 +174,20 @@ io.on("connection", (socket) => {
       });
     }
   });
-  socket.on("ice-candidate", (data) => {
-    io.to(data.to).emit("ice-candidate", {
-      candidate: data.candidate,
-    });
+
+  socket.on("ice-candidate", ({ target, candidate }) => {
+    const user = activeUsers.find(
+      (user) => user.userId === target || user.socketId === target
+    );
+
+    console.log(user, "ice-candidate event received", target, candidate);
+
+    if (user) {
+      io.to(user.socketId).emit("ice-candidate", {
+        candidate: candidate,
+        sender: socket.id,
+      });
+    }
   });
 
   socket.on("answerCall", (data) => {
