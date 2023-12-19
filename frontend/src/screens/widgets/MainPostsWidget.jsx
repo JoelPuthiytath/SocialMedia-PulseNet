@@ -73,6 +73,7 @@ const PostsWidget = ({ userId, isProfile, socket }) => {
               likes={likes}
               comments={comments}
               socket={socket}
+              isProfile={isProfile}
             />
           )
         )}

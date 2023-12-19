@@ -10,7 +10,7 @@ const verifyUser = asyncHandler(async (req, res, next) => {
 
     const { userName } = req.method == "GET" ? req.query : req.body;
     console.log(userName, "<== verifyuser checking");
-    let exist = await User.findOne({ userName });
+    const exist = await User.findOne({ userName });
     console.log(exist);
     if (!exist) return res.status(404).send({ message: "Can't find User!" });
     next();

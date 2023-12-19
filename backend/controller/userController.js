@@ -118,9 +118,12 @@ const getUser = asyncHandler(async (req, res) => {
     if (!id) return res.status(501).send({ message: "Invalid Id" });
     const newUser = await User.findById(id).select("-password");
     if (newUser.blocked)
-      return res.status(403).json({
-        message: `${newUser.firstName} ${newUser.lastName} is a restricted User.`,
-      });
+      return res
+        .status(403)
+        .json({
+          blocked: true,
+          message: `${newUser.firstName} ${newUser.lastName} is a restricted User.`,
+        });
     if (!newUser)
       return res.status(501).send({ message: "Couldn't Find the User" });
     res.status(201).json(newUser);

@@ -12,6 +12,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useFormik } from "formik";
 import { useState, useEffect } from "react";
 import convertToBase64 from "./helper/convert";
+import validationSchema from "./helper/profileValidate";
 import {
   useUpdateUserMutation,
   useEmailVerifyMutation,
@@ -42,6 +43,8 @@ const Profile = () => {
       (async () => {
         try {
           if (users?.isVerified) {
+            console.log("verified");
+            navigate("/");
           } else {
             const res = await emailVerify({ emailToken });
 
@@ -75,9 +78,9 @@ const Profile = () => {
       state: userInfo?.address?.state || users?.address?.state || "",
       pinCode: userInfo?.address?.pinCode || users?.address?.pinCode || "",
     },
+    validationSchema,
     validateOnBlur: false,
     validateOnChange: false,
-
     onSubmit: async (values) => {
       try {
         values = await Object.assign(values, { profilePic: file || "" });
@@ -172,19 +175,41 @@ const Profile = () => {
 
                 <div className="textbox flex flex-col items-center gap-3">
                   <div className="name  flex w-3/4 gap-10">
-                    <input
-                      {...formik.getFieldProps("firstName")}
-                      className={`${styles.textbox} ${extend.textbox}`}
-                      type="text"
-                      placeholder="First Name"
-                    />
-
-                    <input
-                      {...formik.getFieldProps("lastName")}
-                      className={`${styles.textbox} ${extend.textbox}`}
-                      type="text"
-                      placeholder="Last Name"
-                    />
+                    {/* First Name */}
+                    <div className="flex gap-2  w-3/4  flex-col">
+                      <input
+                        {...formik.getFieldProps("firstName")}
+                        className={
+                          formik.errors.firstName && formik.touched.firstName
+                            ? styles.inputError
+                            : `${styles.textbox} ${extend.textbox}`
+                        }
+                        type="text"
+                        placeholder="First Name"
+                      />
+                      {formik.errors.firstName && formik.touched.firstName && (
+                        <span className={styles.error}>
+                          {formik.errors.firstName}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2 w-3/4 flex-col">
+                      <input
+                        {...formik.getFieldProps("lastName")}
+                        className={
+                          formik.errors.lastName && formik.touched.lastName
+                            ? styles.inputError
+                            : `${styles.textbox} ${extend.textbox}`
+                        }
+                        type="text"
+                        placeholder="Last Name"
+                      />
+                      {formik.errors.lastName && formik.touched.lastName && (
+                        <span className={styles.error}>
+                          {formik.errors.lastName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="name  flex w-3/4 gap-10">
                     <input
@@ -221,12 +246,19 @@ const Profile = () => {
                       type="text"
                       placeholder="state"
                     />
-                    <input
-                      {...formik.getFieldProps("pinCode")}
-                      className={`${styles.textbox} ${extend.textbox}`}
-                      type="text"
-                      placeholder="pinCode"
-                    />
+                    <div className="flex flex-col gap-2 w-3/4">
+                      <input
+                        {...formik.getFieldProps("pinCode")}
+                        className={`${styles.textbox} ${extend.textbox}`}
+                        type="text"
+                        placeholder="pinCode"
+                      />
+                      {formik.errors.pinCode && formik.touched.pinCode && (
+                        <span className={styles.error}>
+                          {formik.errors.pinCode}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <button className={styles.btn} type="submit">

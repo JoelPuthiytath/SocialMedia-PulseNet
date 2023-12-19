@@ -8,9 +8,9 @@ const recoveryMail = async (req, res) => {
     console.log(process.env.NODEMAILER_PASSWORD, "<====Main Password");
     console.log(req.body, "<=== mailSender");
 
-    let transporter = createMailTransporter();
+    const transporter = createMailTransporter();
 
-    let MailGenerator = new Mailgen({
+    const MailGenerator = new Mailgen({
       theme: process.env.MAILGEN_THEME,
       product: {
         name: process.env.MAILGEN_PRODUCT_NAME,
@@ -18,7 +18,7 @@ const recoveryMail = async (req, res) => {
       },
     });
 
-    let response = {
+    const response = {
       body: {
         name: userName,
         intro:
@@ -29,9 +29,9 @@ const recoveryMail = async (req, res) => {
       },
     };
 
-    let mail = await MailGenerator.generate(response);
+    const mail = await MailGenerator.generate(response);
 
-    let message = {
+    const message = {
       from: process.env.NODEMAILER_EMAIL,
       to: userEmail,
       subject: subject || "Password recovery mail",
@@ -68,7 +68,7 @@ const verificationMail = async (user) => {
     });
     const verifyLink = `<a href="${process.env.CLIENT_URL}/login-profile?emailToken=${user.emailToken}">Verify Email</a>`;
 
-    let response = {
+    const response = {
       body: {
         name: user.userName,
         intro: `Welcome to PulseNet! We're very excited to have you on board.
@@ -78,9 +78,9 @@ const verificationMail = async (user) => {
       },
     };
 
-    let mail = await MailGenerator.generate(response);
+    const mail = await MailGenerator.generate(response);
 
-    let message = {
+    const message = {
       from: process.env.NODEMAILER_EMAIL,
       to: user.email,
       subject: "verify your email...",

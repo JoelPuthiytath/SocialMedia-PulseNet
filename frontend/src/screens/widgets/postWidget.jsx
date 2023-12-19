@@ -50,6 +50,7 @@ const PostWidget = ({
   likes,
   comments,
   socket,
+  isProfile,
 }) => {
   const [isComments, setIsComments] = useState(false);
   const [showFullComment, setShowFullComment] = useState(false);
@@ -210,6 +211,7 @@ const PostWidget = ({
         subtitle={location}
         userProfilePic={userProfilePic}
         postId={postId}
+        isProfile={isProfile}
       />
       <Typography color={main} sx={{ mt: "1rem" }}>
         {description}

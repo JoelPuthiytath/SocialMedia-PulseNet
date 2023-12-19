@@ -29,6 +29,7 @@ const Friend = ({
   subtitle,
   userProfilePic,
   postId,
+  isProfile,
   friendList = false,
 }) => {
   const options = ["Edit", "Delete", "Cancel"];
@@ -53,11 +54,13 @@ const Friend = ({
 
   const [addFriend] = useAddFriendMutation();
   console.log(friendList, "frinedlist");
+  console.log(isProfile, "isProfile");
 
   const isFriend =
     userId !== friendId
       ? following.find((friend) => friend._id === friendId)
       : null;
+      console.log(isFriend,"isFriend")
 
   const patchFriend = async () => {
     try {
@@ -125,13 +128,16 @@ const Friend = ({
               ) : (
                 <>
                   <div className="d-flex align-items-center">
-                    <IconButton onClick={patchFriend}>
-                      {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
-                      <span className="btn btn-sm btn-outline-primary">
-                        {" "}
-                        Follow
-                      </span>
-                    </IconButton>
+                    {isProfile ? null : (
+                      <IconButton onClick={patchFriend}>
+                        {/* <PersonAddOutlined sx={{ color: primaryDark }} /> */}
+                        <span className="btn btn-sm btn-outline-primary">
+                          {" "}
+                          Follow
+                        </span>
+                      </IconButton>
+                    )}
+
                     <PostMenu
                       postId={postId}
                       friendId={friendId}

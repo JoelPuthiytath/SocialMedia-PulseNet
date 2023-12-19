@@ -107,41 +107,36 @@ const UserWidget = ({ userId, picturePath }) => {
   const hasMounted = useRef(false);
 
   const dispatch = useDispatch();
-  // console.log(userName, "< username in widgets");
-  const getUserInfo = async () => {
-    // const data = await getUser({ userName }).unwrap();
-    const data = await getUserById({ userId }).unwrap();
-    console.log(data, "user data");
-    if (data.blocked) {
-      await logout();
-      dispatch(clearCredentials());
-      toast.warning("You are restricted to use this app");
-    }
 
-    setUser(data);
+  const getUserInfo = async () => {
+    try {
+      const data = await getUserById({ userId }).unwrap();
+      console.log(data, "user data");
+      setUser(data);
+    } catch (error) {
+      if (error.data.blocked) {
+        await logout();
+        dispatch(clearCredentials());
+        navigate("/username");
+        toast.warning("You are restricted to use this app");
+      }
+    }
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setClickFetchblockedUsers(false);
   };
 
   useEffect(() => {
-    // if (!hasMounted.current) {
     getUserInfo();
-
-    //   hasMounted.current = true;
-    // }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user) {
     return null;
   }
 
-  const {
-    firstName,
-    lastName,
-    address,
-    viewedProfile,
-    impressions,
-    followers,
-    following,
-  } = user;
+  const { firstName, lastName, address, followers, following } = user;
 
   const handleBlockUser = async () => {
     try {
@@ -150,24 +145,26 @@ const UserWidget = ({ userId, picturePath }) => {
       const data = await blockUser({ userIdToBlock }).unwrap();
 
       dispatch(setCredentials({ userInfo: { ...data } }));
+      handleClose();
+
+      getUserInfo();
     } catch (error) {
       toast(error);
     }
-    handleClose();
   };
 
   const handleUnBlock = async () => {
     try {
       // const userIdToUnblock = id === undefined ? userId : id;
       const userIdToUnblock = userId;
-
       const data = await unblockUser({ userIdToUnblock }).unwrap();
-
       dispatch(setCredentials({ userInfo: { ...data } }));
+      handleClose();
+
+      getUserInfo();
     } catch (error) {
       console.log(error);
     }
-    handleClose();
 
     // id === undefined ? handleClose() : navigate(`/profile/${id}`);
   };
@@ -206,11 +203,6 @@ const UserWidget = ({ userId, picturePath }) => {
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-    setClickFetchblockedUsers(false);
   };
 
   const handleReportUser = async () => {
@@ -255,6 +247,9 @@ const UserWidget = ({ userId, picturePath }) => {
       dispatch(
         setFriends({ followers: data.followers, following: data.following })
       );
+      handleClose();
+
+      getUserInfo();
     } catch (error) {
       console.log(error);
     }
@@ -267,6 +262,9 @@ const UserWidget = ({ userId, picturePath }) => {
       dispatch(
         setFriends({ following: data.following, followers: data.followers })
       );
+      handleClose();
+
+      getUserInfo();
     } catch (error) {
       console.log(error);
     }
@@ -440,13 +438,13 @@ const UserWidget = ({ userId, picturePath }) => {
               <Typography variant="h5" className="ms-2 text-info">
                 Followers{" "}
                 <Typography className="ms-4" color={medium}>
-                  {followers?.length}
+                  {isFriend ? followers?.length : userInfo.followers.length}
                 </Typography>
               </Typography>
               <Typography variant="h5" className="ms-4 text-info">
                 Following{" "}
                 <Typography className="ms-3" color={medium}>
-                  {following?.length}
+                  {isFriend ? following?.length : userInfo.following.length}
                 </Typography>
               </Typography>
             </Box>
