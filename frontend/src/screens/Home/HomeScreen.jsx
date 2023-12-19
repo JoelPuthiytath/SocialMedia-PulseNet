@@ -43,8 +43,8 @@ const HomeScreen = () => {
 
   // console.log("After initializing socket", socketRef.current);
   useEffect(() => {
-    // socket.current = io(import.meta.env.VITE_REACT_APP_HOSTED_URL);
-    socket.current = io("http://localhost:3000");
+    socket.current = io(import.meta.env.VITE_REACT_APP_HOSTED_URL);
+    // socket.current = io("http://localhost:3000");
 
     socket.current.emit("new-user-add", userInfo._id);
   }, [userInfo._id]);
