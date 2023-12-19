@@ -3,6 +3,8 @@ import { styled } from "@mui/system";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import PhoneIcon from "@mui/icons-material/Phone";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import MicIcon from "@mui/icons-material/Mic";
+import MicOffIcon from "@mui/icons-material/MicOff";
 
 import { Button, IconButton } from "@mui/material";
 // import "./videoCallModel.css";
@@ -77,7 +79,7 @@ const VideoCallModal = ({
   const [video, setVideo] = useState(null);
   const userVideo = useRef(null);
   const peerConnectionRef = useRef(null);
-  const renderOffer = useRef(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(true);
 
   useEffect(() => {
     const initializeVideoCall = async (retryCount = 0) => {
@@ -320,6 +322,19 @@ const VideoCallModal = ({
     socket.current.emit("callEnded", { userId: receiverId });
   };
 
+  const toggleAudioMute = async () => {
+    const tracks = await myVideo.current.srcObject.getAudioTracks();
+    tracks.forEach((track) => {
+      console.log(track);
+
+      track.enabled = !isAudioMuted;
+      console.log(track);
+    });
+    console.log(tracks);
+
+    setIsAudioMuted(!isAudioMuted);
+  };
+
   return (
     <StyledModal
       open={open}
@@ -360,6 +375,13 @@ const VideoCallModal = ({
             </CallerInfo>
           )}
           <ButtonContainer>
+            <StyledButton
+              variant="contained"
+              color={isAudioMuted ? "primary" : "secondary"}
+              onClick={toggleAudioMute}
+            >
+              {isAudioMuted ? <MicIcon /> : <MicOffIcon />}
+            </StyledButton>
             {isIncomingCall && !callAccepted && (
               <StyledButton
                 variant="contained"

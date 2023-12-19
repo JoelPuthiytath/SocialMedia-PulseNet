@@ -44,7 +44,7 @@ const Profile = () => {
         try {
           if (users?.isVerified) {
             console.log("verified");
-            navigate("/");
+            // navigate("/");
           } else {
             const res = await emailVerify({ emailToken });
 

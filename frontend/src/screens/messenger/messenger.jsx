@@ -53,8 +53,8 @@ const Messenger = () => {
   }, [userInfo]);
 
   useEffect(() => {
-    socket.current = io(import.meta.env.VITE_REACT_APP_HOSTED_URL);
-    // socket.current = io("http://localhost:3000");
+    // socket.current = io(import.meta.env.VITE_REACT_APP_HOSTED_URL);
+    socket.current = io("http://localhost:3000");
 
     socket.current.emit("new-user-add", userInfo._id);
     socket.current.on("get-users", (users) => {
