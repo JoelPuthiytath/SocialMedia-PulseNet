@@ -41,10 +41,6 @@ import Register from "./components/UserComponents/Authentication/Register.jsx";
 import Reset from "./components/UserComponents/Authentication/Reset.jsx";
 import NotFound from "./components/UserComponents/Authentication/NotFound.jsx";
 import ProfilePage from "./screens/Profile/profilePage.jsx";
-import Vidocall from "./components/videoCall.jsx";
-import AdminReports from "./screens/AdminScreen/AdminReports.jsx";
-// import ProfilePage from "./screens/Profile/profilePage.jsx";
-// ****
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -67,7 +63,6 @@ const router = createBrowserRouter(
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/messenger" element={<Messenger />} />
           <Route path="/posts/:postId" element={<PostModal />} />
-          <Route path="/videoCall" element={<Vidocall />} />
         </Route>
 
         {/* private route */}

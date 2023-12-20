@@ -13,10 +13,7 @@ import { themeSettings } from "./theme.js";
 
 import "./App.css";
 
-// admin  imports >>>
-import AdminHeader from "./components/AdminComponents/AdminHeader";
 
-// end
 const App = () => {
   const { mode } = useSelector((state) => state.authUser);
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);

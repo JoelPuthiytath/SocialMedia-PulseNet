@@ -158,6 +158,7 @@ const UserWidget = ({ userId, picturePath }) => {
       // const userIdToUnblock = id === undefined ? userId : id;
       const userIdToUnblock = userId;
       const data = await unblockUser({ userIdToUnblock }).unwrap();
+      console.log(data, "blockuser");
       dispatch(setCredentials({ userInfo: { ...data } }));
       handleClose();
 
@@ -464,8 +465,8 @@ const UserWidget = ({ userId, picturePath }) => {
             <>
               <div
                 style={{
-                  minHeight: "30vh",
-                  height: "40vh",
+                  minHeight: "20vh",
+                  height: "30vh",
                   overscrollBehaviorY: "auto",
                 }}
               >
@@ -473,19 +474,15 @@ const UserWidget = ({ userId, picturePath }) => {
                   <TableBody>
                     {blockedUsers.map((user) => (
                       <TableRow key={user._id}>
-                        <TableCell scope="3" style={{ width: "30%" }}>
+                        <TableCell scope="5" style={{ width: "30%" }}>
                           <UserImage image={user.profilePic} size="40" />
                         </TableCell>
-                        <TableCell scope="auto" style={{ width: "40%" }}>
+                        <TableCell
+                          scope="auto"
+                          style={{ fontSize: "0.9rem" }}
+                          onClick={() => navigate(`/profile/${user._id}`)}
+                        >
                           {user.firstName} {user.lastName}
-                        </TableCell>
-                        <TableCell scope="4" style={{ width: "30%" }}>
-                          <button
-                            className="btn btn-outline-primary btn-sm font-xsm"
-                            onClick={() => handleUnBlock(user._id)}
-                          >
-                            <small>Unblock</small>
-                          </button>
                         </TableCell>
                       </TableRow>
                     ))}
