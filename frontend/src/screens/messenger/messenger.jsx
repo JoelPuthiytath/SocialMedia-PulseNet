@@ -13,11 +13,18 @@ import {
 import Conversation from "../../components/conversation/conversation";
 import Message from "../../components/message/message";
 import SendIcon from "@mui/icons-material/Send";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useUserChatsMutation } from "../../slices/chatApiSlice";
 // import { selectSocket } from "../../slices/socketSlice";
 // import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import {
+  useGetUserByIdMutation,
+  useLogoutMutation,
+} from "../../slices/UsersApiSlice";
+import { clearCredentials } from "../../slices/AuthSlice";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Messenger = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
@@ -27,6 +34,8 @@ const Messenger = () => {
 
   const { userInfo } = useSelector((state) => state.authUser);
   const [userChats] = useUserChatsMutation();
+  const [getUserById] = useGetUserByIdMutation();
+  const [logout] = useLogoutMutation();
   // const { postId } = useParams();
   // console.log(`postId is ${postId}`);
 
@@ -38,6 +47,26 @@ const Messenger = () => {
 
   // const socket = useSelector(selectSocket);
   const socket = useRef();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      try {
+        const userId = userInfo._id;
+        const data = await getUserById({ userId }).unwrap();
+        console.log(data, "user data");
+      } catch (error) {
+        if (error.data.blocked) {
+          await logout();
+          dispatch(clearCredentials());
+          navigate("/username");
+          toast.warning("You are restricted to use this app");
+        }
+      }
+    };
+    getUserInfo();
+  }, []);
 
   const getChats = async () => {
     try {

@@ -1,22 +1,18 @@
 import { Box, useMediaQuery } from "@mui/material";
 import { useSelector } from "react-redux";
 import PostsWidget from "../widgets/MainPostsWidget";
-import { useDispatch } from "react-redux";
 import Header from "../../components/UserComponents/navbar/header";
 import UserWidget from "../widgets/UserWidgets";
 import MyPostWidget from "../widgets/MyPostWidget";
 import FriendListWidget from "../widgets/FriendListWidget";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import {
-  connectSocket,
-  disconnectSocket,
-  selectSocket,
-} from "../../slices/socketSlice";
 
 const HomeScreen = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const { userInfo } = useSelector((state) => state.authUser);
+
+
   const { _id, profilePic } = userInfo;
   // const socket = useSelector(selectSocket);
   // const dispatch = useDispatch();
@@ -40,6 +36,7 @@ const HomeScreen = () => {
   //     dispatch(disconnectSocket());
   //   };
   // }, [dispatch, socketRef]);
+
 
   // console.log("After initializing socket", socketRef.current);
   useEffect(() => {

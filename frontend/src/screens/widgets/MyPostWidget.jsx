@@ -25,12 +25,18 @@ import UserImage from "../../components/UserImage";
 import WidgetWrapper from "../../components/WidgetWrapper";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPosts } from "../../slices/AuthSlice";
+import { clearCredentials, setPosts } from "../../slices/AuthSlice";
 import {
   useCreatePostMutation,
   useGetFeedPostMutation,
 } from "../../slices/PostApiSlice";
 import { LoaderIcon } from "react-hot-toast";
+import {
+  useGetUserByIdMutation,
+  useLogoutMutation,
+} from "../../slices/UsersApiSlice";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const MyPostWidget = ({ profilePic }) => {
   const dispatch = useDispatch();
@@ -45,6 +51,9 @@ const MyPostWidget = ({ profilePic }) => {
   const medium = palette.neutral.medium;
   const [createPost] = useCreatePostMutation();
   const [getFeedPost] = useGetFeedPostMutation();
+  const [getUserById] = useGetUserByIdMutation();
+  const [logout] = useLogoutMutation();
+  const navigate = useNavigate();
 
   const [location, setLocation] = useState(null);
 
@@ -63,6 +72,22 @@ const MyPostWidget = ({ profilePic }) => {
   //     console.error("Geolocation is not supported by this browser.");
   //   }
   // };
+
+  const getUserInfo = async () => {
+    try {
+      const userId = _id;
+      const data = await getUserById({ userId }).unwrap();
+      console.log(data, "user data");
+    } catch (error) {
+      if (error.data.blocked) {
+        await logout();
+        dispatch(clearCredentials());
+        navigate("/username");
+        toast.warning("You are restricted to use this app");
+      }
+    }
+  };
+
   const getUserLocation = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -79,7 +104,6 @@ const MyPostWidget = ({ profilePic }) => {
             const { country, county, state } =
               response.data.results[0].components;
 
-            
             setLocation(`${state}, ${county}`);
           } catch (error) {
             console.error("Error fetching city:", error.message);
@@ -95,6 +119,8 @@ const MyPostWidget = ({ profilePic }) => {
   };
 
   const handlePost = async () => {
+    getUserInfo();
+
     const formData = new FormData();
     formData.append("description", post);
     if (location) {
