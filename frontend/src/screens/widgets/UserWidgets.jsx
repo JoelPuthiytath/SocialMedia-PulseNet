@@ -31,7 +31,6 @@ import {
   useBlockUserMutation,
   useFetchBlockedUsersMutation,
   useGetUserByIdMutation,
-  useGetUserMutation,
   useLogoutMutation,
   useRemoveFriendMutation,
   useReportUserMutation,
@@ -81,8 +80,6 @@ const UserWidget = ({ userId, picturePath }) => {
   // State for the reporting dialog
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
-  const [isEditingTwitter, setIsEditingTwitter] = useState(false);
-  const [twitterProfileLink, setTwitterProfileLink] = useState("");
   const [isEditingLinkedin, setIsEditingLinkedin] = useState(false);
   const [profileLink, setProfileLink] = useState("");
   const [blockedUsers, setBlockedUsers] = useState([]);
@@ -104,7 +101,6 @@ const UserWidget = ({ userId, picturePath }) => {
   const [fetchBlocedUsers] = useFetchBlockedUsersMutation();
   const [addFriend] = useAddFriendMutation();
   const [removeFriend] = useRemoveFriendMutation();
-  const hasMounted = useRef(false);
 
   const dispatch = useDispatch();
 

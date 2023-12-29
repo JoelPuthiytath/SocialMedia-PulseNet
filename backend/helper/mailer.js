@@ -56,7 +56,7 @@ const recoveryMail = async (req, res) => {
 const verificationMail = async (user) => {
   try {
     console.log(user.emailToken);
-    console.log(process.env.CLIENT_URL);
+    console.log(process.env.HOSTED_URL);
     let transporter = createMailTransporter();
 
     let MailGenerator = new Mailgen({
@@ -66,7 +66,7 @@ const verificationMail = async (user) => {
         link: process.env.MAILGEN_PRODUCT_LINK,
       },
     });
-    const verifyLink = `<a href="${process.env.CLIENT_URL}/login-profile?emailToken=${user.emailToken}">Verify Email</a>`;
+    const verifyLink = `<a href="${process.env.HOSTED_URL}/login-profile?emailToken=${user.emailToken}">Verify Email</a>`;
 
     const response = {
       body: {

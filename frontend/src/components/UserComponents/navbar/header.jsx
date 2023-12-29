@@ -12,6 +12,7 @@ import {
   Divider,
   Chip,
   Avatar,
+  OutlinedInput,
 } from "@mui/material";
 import { format } from "timeago.js";
 
@@ -19,6 +20,7 @@ import {
   Search,
   Message,
   DarkMode,
+  NotificationImportantOutlined,
   LightMode,
   Help,
   Menu,
@@ -36,7 +38,7 @@ import {
   removeNotification,
   removeAllNotifications,
 } from "../../../slices/AuthSlice";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, redirect, useNavigate } from "react-router-dom";
 import FlexBetween from "../../../components/FlexBetween";
 import {
   useGetUserByIdMutation,
@@ -65,16 +67,12 @@ const Navbar = ({ socket }) => {
   // const [data, setData] = useState([]);
 
   useEffect(() => {
-    socket?.current?.on("getNotification", (data) => {
-     
+    socket.current?.on("getNotification", (data) => {
       dispatch(setNotification({ notification: data }));
     });
   }, [socket, dispatch]);
 
- 
-
   const handleNotificationClick = (notificationId) => {
-
     dispatch(setNotificationRead({ notificationId }));
     setTimeout(() => {
       dispatch(removeNotification({ notificationId }));
@@ -82,7 +80,6 @@ const Navbar = ({ socket }) => {
   };
 
   const handleViewAllClick = () => {
-
     dispatch(setAllNotificationsRead());
     setTimeout(() => {
       dispatch(removeAllNotifications());
@@ -100,7 +97,7 @@ const Navbar = ({ socket }) => {
       } else {
         action = "shared";
       }
-  
+
       const messageClass = read ? "read-notification" : "unread-notification";
 
       return {
@@ -125,8 +122,9 @@ const Navbar = ({ socket }) => {
 
   // console.log(data, "this si the data");
 
+  console.log(Notifications);
+
   const handleLogout = async () => {
-   
     await logout();
     dispatch(clearCredentials());
     navigate("/username");
@@ -162,6 +160,21 @@ const Navbar = ({ socket }) => {
         {/* DESKTOP NAV */}
         {isNonMobileScreens ? (
           <FlexBetween gap="2rem">
+            <Typography
+              fontWeight="bold"
+              zIndex={5}
+              fontSize="1.1rem"
+              color={primaryDark}
+              onClick={() => navigate("/")}
+              sx={{
+                "&:hover": {
+                  color: primaryDark,
+                  cursor: "pointer",
+                },
+              }}
+            >
+              Home
+            </Typography>
             <IconButton onClick={() => dispatch(setMode())}>
               {theme.palette.mode === "dark" ? (
                 <DarkMode sx={{ fontSize: "25px" }} />
@@ -180,7 +193,6 @@ const Navbar = ({ socket }) => {
                 },
               }}
               markAsRead={(newData) => {
-
                 alert(newData);
               }}
             />
@@ -197,17 +209,9 @@ const Navbar = ({ socket }) => {
               <Select
                 value={fullName}
                 sx={{
-                  // backgroundColor: neutralLight,
                   width: "auto",
                   borderRadius: "5rem",
                   p: "0.25rem 1rem",
-                  // "& .MuiSvgIcon-root": {
-                  //   pr: "0.25rem",
-                  //   width: "3rem",
-                  // },
-                  // "& .MuiSelect-select:focus": {
-                  //   backgroundColor: neutralLight,
-                  // },
                 }}
                 input={<InputBase />}
               >

@@ -132,7 +132,7 @@ io.on("connection", (socket) => {
     "sendNotification",
     ({ senderId, image, receiverId, postId, time, type }) => {
       const user = activeUsers.find((user) => user.userId === receiverId);
-      console.log("sendNotification is working");
+      console.log("sendNotification is working",user);
       const notificationId = uuidv4();
       io.to(user.socketId).emit("getNotification", {
         notificationId,

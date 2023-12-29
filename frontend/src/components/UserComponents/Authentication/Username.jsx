@@ -12,10 +12,12 @@ import { useDispatch } from "react-redux";
 import { setCredentials } from "../../../slices/AuthSlice";
 import { setUsers } from "../../../slices/UserSlice";
 import { useEffect } from "react";
+import { useTheme } from "@mui/material";
 const Username = () => {
   const [getUser, { isLoading }] = useGetUserMutation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const theme = useTheme();
 
   const formik = useFormik({
     initialValues: {
@@ -59,6 +61,9 @@ const Username = () => {
               <input
                 {...formik.getFieldProps("userName")}
                 name="userName"
+                style={{
+                  color: theme.palette.mode === "dark" ? "black" : "black",
+                }}
                 className={
                   formik.errors.userName && formik.touched.userName
                     ? styles.inputError

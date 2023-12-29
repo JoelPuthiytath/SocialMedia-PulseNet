@@ -22,10 +22,12 @@ import { setCredentials } from "../../../slices/AuthSlice";
 import Loader from "../../../loader/ClimbingBoxLoader";
 import { useRef } from "react";
 import { clearUsers, setUsers } from "../../../slices/UserSlice";
+import { useTheme } from "@mui/material";
 
 const Profile = () => {
   const { userInfo } = useSelector((state) => state.authUser);
   const { users } = useSelector((state) => state.users);
+  const theme = useTheme();
 
   const [updateUser] = useUpdateUserMutation();
   const [emailVerify, { isLoading }] = useEmailVerifyMutation();
@@ -156,7 +158,13 @@ const Profile = () => {
                 </span>
               </div>
 
-              <form className="py-1" onSubmit={formik.handleSubmit}>
+              <form
+                className="py-1"
+                onSubmit={formik.handleSubmit}
+                style={{
+                  color: theme.palette.mode === "dark" ? "black" : "black",
+                }}
+              >
                 <div className="profile flex justify-center py-3">
                   <label htmlFor="profile">
                     <img

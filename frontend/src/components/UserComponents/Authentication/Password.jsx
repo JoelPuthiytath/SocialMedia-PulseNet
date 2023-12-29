@@ -8,16 +8,16 @@ import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoginMutation } from "../../../slices/UsersApiSlice";
 import { setCredentials } from "../../../slices/AuthSlice";
+import { useTheme } from "@mui/material";
 // import { toast } from "react-toastify";
 
 const Password = () => {
   const { users } = useSelector((state) => state.users);
 
- 
-
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
+  const theme = useTheme();
 
   const formik = useFormik({
     initialValues: {
@@ -27,7 +27,6 @@ const Password = () => {
     validateOnChange: false,
     onSubmit: async (values) => {
       try {
-  
         let userName = users.userName;
         let password = values.password;
         const res = await login({ userName, password }).unwrap();
@@ -75,6 +74,9 @@ const Password = () => {
                     ? styles.inputError
                     : styles.textbox
                 }
+                style={{
+                  color: theme.palette.mode === "dark" ? "black" : "black",
+                }}
                 type="text"
                 placeholder="Password"
               />

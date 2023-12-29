@@ -11,8 +11,11 @@ const schema = yup.object().shape({
     .max(20, "Username must not exceed 20 characters"),
   password: yup
     .string()
-    .min(5)
-    .matches(passwordRules, { message: "Invalid password format" }),
+    .min(5, "Password must be at least 5 characters")
+    .matches(
+      passwordRules,
+      "Invalid password format, use a combination of uppercase, lowercase and numbers"
+    ),
   confirm_pwd: yup
     .string()
     .oneOf([yup.ref("password"), null], "Passwords must match"),

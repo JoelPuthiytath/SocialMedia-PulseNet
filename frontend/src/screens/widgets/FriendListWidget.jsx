@@ -20,6 +20,7 @@ import {
 } from "../../slices/UsersApiSlice";
 import FlexBetween from "../../components/FlexBetween";
 import { Search } from "@mui/icons-material";
+import FollowersEmptyImg from "../../assets/img/kindpng_2281374.png";
 // import { Button, ButtonGroup } from "react-bootstrap";
 // import ButtonGroup from "@mui/material/ButtonGroup";
 // import Button from "@mui/material/Button";
@@ -150,7 +151,7 @@ const FriendListWidget = ({ userId }) => {
         </ButtonGroup>
       </FlexBetween>
 
-      {clickFollowers && followers?.length > 0 && (
+      {clickFollowers && followers?.length > 0 ? (
         <WidgetWrapper marginTop={"2rem"}>
           <Typography
             color={palette.neutral.dark}
@@ -174,7 +175,15 @@ const FriendListWidget = ({ userId }) => {
             ))}
           </Box>
         </WidgetWrapper>
+      ) : (
+        clickFollowers && (
+          <>
+            <img className="mt-2" src={FollowersEmptyImg} width={150} />
+            <span className="mt-2 ms-3">No followers yet!</span>
+          </>
+        )
       )}
+
       {clickFollowing && following?.length > 0 && (
         <WidgetWrapper marginTop={"2rem"}>
           <Typography
