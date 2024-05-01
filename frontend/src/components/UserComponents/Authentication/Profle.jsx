@@ -227,7 +227,7 @@ const Profile = () => {
                       placeholder="Mobile"
                     />
 
-                    <input
+                    {/* <input
                       {...formik.getFieldProps("email")}
                       className={
                         formik.errors.email && formik.touched.email
@@ -236,7 +236,7 @@ const Profile = () => {
                       }
                       type="text"
                       placeholder="Email"
-                    />
+                    /> */}
                   </div>
                   {formik.errors.email && formik.touched.email && (
                     <span className={styles.error}>{formik.errors.email}</span>

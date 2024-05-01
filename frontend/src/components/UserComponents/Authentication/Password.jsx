@@ -100,6 +100,17 @@ const Password = () => {
             </div>
           </form>
         </div>
+        <div className="ms-2 @apply border-4 border-gray-50 shrink h-3/4 w-[30%] rounded-3xl py-20 px-7 min-w-max">
+          <small className="text-xm">
+            If you don't feel like signing up but just want to check out the
+            website,
+            <br /> feel free to use the username and password below.
+          </small>{" "}
+          <div className="mt-3">
+            Username: <span className="text-primary">pulseNetGuest</span> <br />
+            password: <span className="text-danger">ddd3V</span>
+          </div>
+        </div>
       </div>
     </div>
   );
