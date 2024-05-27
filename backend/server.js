@@ -56,8 +56,6 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
 } else {
-  console.log("haii");
-  console.log(__dirname);
   app.get("/", (req, res) => res.send("server is running"));
 }
 

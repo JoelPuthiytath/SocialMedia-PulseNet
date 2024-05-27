@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import avatar from "../../../assets/img/Profile.png";
 import styles from "./styles/Username.module.css";
 import toast, { Toaster } from "react-hot-toast";
+import { useMediaQuery } from "@mui/material";
 
 // import validationSchema from "./helper/validate";
 import { useFormik } from "formik";
@@ -18,6 +19,7 @@ const Password = () => {
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const theme = useTheme();
+  const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
 
   const formik = useFormik({
     initialValues: {
@@ -43,7 +45,13 @@ const Password = () => {
   return (
     <div className="container mx-auto">
       {<Toaster position="top-center" reverseOrder={false}></Toaster>}
-      <div className="flex justify-center items-center h-screen">
+      <div
+        className={
+          isNonMobileScreens
+            ? "flex flex-col md:flex-row justify-center items-center h-screen"
+            : "flex flex-col md:flex-row justify-center items-center h-screen mt-4"
+        }
+      >
         <div className={styles.glass}>
           <div
             className="title flex flex-col items-center"
@@ -100,14 +108,21 @@ const Password = () => {
             </div>
           </form>
         </div>
-        <div className="ms-2 @apply border-4 border-gray-50 shrink h-3/4 w-[30%] rounded-3xl py-20 px-7 min-w-max">
+        <div
+          className={
+            isNonMobileScreens
+              ? " ms-2 border-4 border-gray-50 shrink h-3/4 w-full md:w-[30%] rounded-3xl py-10 px-7 min-w-max"
+              : "mx-auto border-4 border-gray-50 shrink h-3/4 w-full md:w-[30%] rounded-3xl py-10 px-7 min-w-max"
+          }
+        >
           <small className="text-xm">
             If you don't feel like signing up but just want to check out the
             website,
             <br /> feel free to use the username and password below.
-          </small>{" "}
+          </small>
           <div className="mt-3">
-            Username: <span className="text-primary">pulseNetGuest</span> <br />
+            Username: <span className="text-primary">pulseNetGuest</span>
+            <br />
             password: <span className="text-danger">ddd3V</span>
           </div>
         </div>
